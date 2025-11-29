@@ -31,11 +31,7 @@ class RoulettePage extends ConsumerWidget {
         title: Text('ルーレット ($currentRound/$totalRounds)'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Stack(
-        children: [
-          RouletteScene(teams: unselectedTeams),
-        ],
-      ),
+      body: RouletteScene(teams: unselectedTeams),
     );
   }
 }

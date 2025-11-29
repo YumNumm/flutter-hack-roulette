@@ -20,9 +20,10 @@ class RouletteScene extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scene = useMemoized(Scene.new);
+
     final camera = useMemoized(
       () => PerspectiveCamera(
-        position: vm.Vector3(0, 5, 8),
+        position: vm.Vector3(0, 10, 10),
         target: vm.Vector3(0, 0, 0),
       ),
     );
@@ -40,8 +41,43 @@ class RouletteScene extends HookConsumerWidget {
       () {
         unawaited(
           Scene.initializeStaticResources().then((_) async {
+            final node = await Node.fromAsset('build/models/dash.model');
+            scene.add(node);
+
+            final dash = KinematicDash(node);
+            dash.updateNode();
+            kinematicDash.value = dash;
+            debugPrint('✅ Dash model loaded successfully');
+
+            final skySphere = await Node.fromAsset(
+              'build/models/sky_sphere.model',
+            );
+
+            Node convertToUnlit(Node node) {
+              // Search for all mesh primitives and convert them to unlit.
+              if (node.mesh != null) {
+                for (final primitive in node.mesh!.primitives) {
+                  if (primitive.material is PhysicallyBasedMaterial) {
+                    final pbr = primitive.material as PhysicallyBasedMaterial;
+                    primitive.material = UnlitMaterial(
+                      colorTexture: pbr.baseColorTexture,
+                    );
+                  }
+                }
+              }
+              for (final child in node.children) {
+                convertToUnlit(child);
+              }
+
+              return node;
+            }
+
+            final sky = convertToUnlit(skySphere);
+            sky.globalTransform = vm.Matrix4.translation(
+              vm.Vector3(0, 1, 1),
+            );
+            scene.add(sky);
             isSceneReady.value = true;
-            await _loadDashModel(scene, kinematicDash);
           }),
         );
         unawaited(controller.repeat());
@@ -66,93 +102,103 @@ class RouletteScene extends HookConsumerWidget {
 
     final panStartOffset = useRef<Offset?>(null);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onPanStart: (details) => panStartOffset.value = details.localPosition,
-      onPanEnd: (details) {
-        final dash = kinematicDash.value;
-        if (dash == null || dash.isRunning) {
-          return;
-        }
-        if (panStartOffset.value == null) {
-          return;
-        }
-        final startOffset = panStartOffset.value!;
-        final endOffset = details.localPosition;
-        final diff = endOffset - startOffset;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 画面の短辺/2を基準に境界半径を計算
+        // 3Dワールド座標へのスケール変換（調整可能）
+        const worldScale = 0.01;
+        final screenRadius = constraints.biggest.shortestSide * 0.5;
+        final worldBoundaryRadius = screenRadius * worldScale;
 
-        // 最小速度を設定
-        const minVelocity = 0.5;
-        if (diff.distance < minVelocity) {
-          debugPrint('⚠️ Flick too slow: ${diff.distance}');
-          return;
-        }
+        // 境界半径を設定
+        kinematicDash.value?.boundaryRadius = worldBoundaryRadius.toInt();
 
-        debugPrint(
-          '🎯 Flick detected: velocity=$diff, '
-          'length=${diff.distance}',
-        );
-        dash.start(vm.Vector2(-diff.dx, diff.dy) / 100);
-      },
-      child: Stack(
-        children: [
-          // 2Dルーレット円盤を背景に描画（固定）
-          SizedBox.expand(
-            child: CustomPaint(
-              painter: _RouletteDiskPainter(
-                teams: teams,
-              ),
-            ),
-          ),
-          // 3D Dashくんを前景に描画
-          if (kinematicDash.value != null)
-            SizedBox.expand(
-              child: CustomPaint(
-                painter: _ScenePainter(
-                  scene: scene,
-                  camera: camera,
-                  repaint: controller,
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanStart: (details) => panStartOffset.value = details.localPosition,
+          onPanEnd: (details) {
+            final dash = kinematicDash.value;
+            if (dash == null || dash.isRunning) {
+              return;
+            }
+            if (panStartOffset.value == null) {
+              return;
+            }
+            final startOffset = panStartOffset.value!;
+            final endOffset = details.localPosition;
+            final diff = endOffset - startOffset;
+
+            // 最小速度を設定
+            const minVelocity = 0.5;
+            if (diff.distance < minVelocity) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Flick too slow'),
                 ),
-              ),
-            ),
-          // フリック案内表示（ルーレット未開始時のみ）
-          if (kinematicDash.value != null && !kinematicDash.value!.isRunning)
-            const Positioned(
-              bottom: 100,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Text(
-                  '画面をフリックしてルーレットを開始',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 4,
-                      ),
-                    ],
+              );
+              return;
+            }
+
+            debugPrint(
+              '🎯 Flick detected: velocity=$diff, '
+              'length=${diff.distance}',
+            );
+            dash.start(vm.Vector2(-diff.dx, diff.dy) / 10);
+          },
+          child: Stack(
+            children: [
+              Transform(
+                transform: Matrix4.identity()
+                  ..setEntry(3, 3, 0.0001) // perspective
+                  ..rotateX(-pi / 12)
+                  ..rotateY(0),
+                child: SizedBox.expand(
+                  child: CustomPaint(
+                    painter: _RouletteDiskPainter(
+                      teams: teams,
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
+              // 3D Dashくんを前景に描画
+              if (kinematicDash.value != null)
+                SizedBox.expand(
+                  child: CustomPaint(
+                    painter: _ScenePainter(
+                      scene: scene,
+                      camera: camera,
+                      repaint: controller,
+                    ),
+                  ),
+                ),
+              // フリック案内表示（ルーレット未開始時のみ）
+              if (kinematicDash.value != null &&
+                  !kinematicDash.value!.isRunning)
+                const Positioned(
+                  bottom: 100,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Text(
+                      '画面をフリックしてルーレットを開始',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
-  }
-
-  Future<void> _loadDashModel(
-    Scene scene,
-    ValueNotifier<KinematicDash?> kinematicDash,
-  ) async {
-    final node = await Node.fromAsset('assets/models/dash.glb');
-    scene.add(node);
-
-    final dash = KinematicDash(node);
-    dash.updateNode();
-    kinematicDash.value = dash;
-    debugPrint('✅ Dash model loaded successfully');
   }
 }
 
@@ -174,7 +220,7 @@ class _RouletteDiskPainter extends CustomPainter {
 
     final segmentAngle = (2 * pi) / teams.length;
 
-    // ルーレット円盤を固定（回転なし）
+    // ルーレット円盤を描画
     for (var i = 0; i < teams.length; i++) {
       final startAngle = i * segmentAngle - pi / 2;
       final paint = Paint()

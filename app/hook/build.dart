@@ -8,6 +8,7 @@ void main(List<String> args) async {
       inputFilePaths: [
         'assets/models/dash.glb',
         'assets/models/flutter_logo.glb',
+        'assets/models/sky_sphere.glb',
       ],
     );
   });
