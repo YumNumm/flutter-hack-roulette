@@ -8,7 +8,7 @@ import 'package:roulette/features/pinball/data/model/game_state.dart';
 import 'package:roulette/features/pinball/data/notifier/pinball_game_notifier.dart';
 import 'package:roulette/features/pinball/data/notifier/team_notifier.dart';
 import 'package:roulette/features/pinball/ui/components/flipper_controls.dart';
-import 'package:roulette/features/pinball/ui/components/pinball_table_3d.dart';
+import 'package:roulette/features/pinball/ui/components/pinball_table_2d.dart';
 
 class PinballGamePage extends HookConsumerWidget {
   const PinballGamePage({super.key});
@@ -171,12 +171,12 @@ class PinballGamePage extends HookConsumerWidget {
                 ),
               ),
 
-              // 3Dピンボールテーブル
+              // 2Dピンボールテーブル
               Expanded(
                 flex: 3,
                 child: ColoredBox(
                   color: Colors.black87,
-                  child: PinballTable3D(
+                  child: PinballTable2D(
                     onHoleDetected: (holeNumber) {
                       ref
                           .read(pinballGameProvider.notifier)
