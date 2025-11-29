@@ -45,5 +45,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  shaders:
+    - shaders/neon_line.frag
+    - shaders/light_trail.frag
+    - shaders/hologram.frag
+    - shaders/background_gradient.frag
   config:
     enable-swift-package-manager: true
