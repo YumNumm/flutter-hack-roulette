@@ -49,7 +49,27 @@ class PinballTable3D extends HookConsumerWidget {
       [gameState],
     );
 
-    return sceneController.threeJs.build();
+    return Stack(
+      children: [
+        sceneController.threeJs.build(),
+        // デバッグ情報
+        if (sceneController.isBallLaunched)
+          Positioned(
+            top: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              color: Colors.black54,
+              child: Text(
+                'Ball: (${sceneController.ballPosX.toStringAsFixed(1)}, '
+                '${sceneController.ballPosY.toStringAsFixed(1)}, '
+                '${sceneController.ballPosZ.toStringAsFixed(1)})',
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 
@@ -57,15 +77,12 @@ class PinballTable3D extends HookConsumerWidget {
 class _PinballSceneController {
   _PinballSceneController(this.onHoleDetected) {
     threeJs = three.ThreeJS(
-      onSetupComplete: () {},
+      onSetupComplete: () {
+        // セットアップ完了後、アニメーションループを開始
+        _startAnimationLoop();
+      },
       setup: setup,
       settings: three.Settings(),
-    );
-
-    // アニメーションタイマー起動
-    _animationTimer = Timer.periodic(
-      const Duration(milliseconds: 16),
-      (_) => _update(),
     );
   }
 
@@ -95,13 +112,13 @@ class _PinballSceneController {
   bool isFlipperLeftActive = false;
   bool isFlipperRightActive = false;
 
-  var leftFlipperAngle = 0.0;
-  var rightFlipperAngle = 0.0;
+  double leftFlipperAngle = 0;
+  double rightFlipperAngle = 0;
   final flipperSpeed = 5.0;
-  final maxFlipperAngle = math.pi / 3; // 60度
+  final double maxFlipperAngle = math.pi / 3; // 60度
 
   Timer? _animationTimer;
-  var _disposed = false;
+  bool _disposed = false;
 
   Future<void> setup() async {
     // Camera
@@ -112,11 +129,13 @@ class _PinballSceneController {
       1000,
     );
     threeJs.camera.position.setValues(0, 15, 15);
-    threeJs.camera.lookAt(threeJs.scene.position);
 
     // Scene
     threeJs.scene = three.Scene();
     threeJs.scene.background = three.Color.fromHex32(0x1a1a2e);
+
+    // カメラをシーンに追加（ライトがカメラの子要素なので重要）
+    threeJs.scene.add(threeJs.camera);
 
     // Lights
     final ambientLight = three.AmbientLight(0xffffff, 0.6);
@@ -127,15 +146,22 @@ class _PinballSceneController {
     directionalLight.castShadow = true;
     threeJs.scene.add(directionalLight);
 
-    final pointLight = three.PointLight(0x00ffff, 1, 50);
+    final pointLight = three.PointLight(0x00ffff, 1.0, 50);
     pointLight.position.setValues(0, 5, -8);
-    threeJs.scene.add(pointLight);
+    threeJs.camera.add(pointLight);
 
     _createTable();
     _createBall();
     _createFlippers();
     _createHoles(6); // 6つの穴を作成
     _createBumpers();
+  }
+
+  void _startAnimationLoop() {
+    _animationTimer = Timer.periodic(
+      const Duration(milliseconds: 16), // ~60 FPS
+      (_) => _update(),
+    );
   }
 
   void _createTable() {
@@ -241,7 +267,7 @@ class _PinballSceneController {
       threeJs.scene.add(holeMesh);
 
       // 番号をテキストで表示するメッシュ（簡易版）
-      final numberGeometry = three.SphereGeometry(0.2, 16);
+      final numberGeometry = three.SphereGeometry(0.2, 16, 16);
       final numberMaterial = three.MeshPhongMaterial.fromMap({
         'color': 0xffffff,
         'emissive': 0x666666,
@@ -304,81 +330,91 @@ class _PinballSceneController {
   }
 
   void _update() {
-    if (_disposed || !isBallLaunched) {
+    if (_disposed) {
       return;
     }
 
     const deltaTime = 0.016; // 16ms
 
-    // 重力適用
-    ballVelY += gravity * deltaTime;
+    if (isBallLaunched) {
+      // 重力適用
+      ballVelY += gravity * deltaTime;
 
-    // ボール移動
-    ballPosX += ballVelX * deltaTime;
-    ballPosY += ballVelY * deltaTime;
-    ballPosZ += ballVelZ * deltaTime;
+      // ボール移動
+      ballPosX += ballVelX * deltaTime;
+      ballPosY += ballVelY * deltaTime;
+      ballPosZ += ballVelZ * deltaTime;
 
-    // テーブル境界チェック
-    if (ballPosX < -tableWidth / 2 + ballRadius) {
-      ballPosX = -tableWidth / 2 + ballRadius;
-      ballVelX = -ballVelX * 0.8; // 反発係数
+      // テーブル境界チェック
+      if (ballPosX < -tableWidth / 2 + ballRadius) {
+        ballPosX = -tableWidth / 2 + ballRadius;
+        ballVelX = -ballVelX * 0.8; // 反発係数
+      }
+      if (ballPosX > tableWidth / 2 - ballRadius) {
+        ballPosX = tableWidth / 2 - ballRadius;
+        ballVelX = -ballVelX * 0.8;
+      }
+
+      // テーブル上面チェック
+      if (ballPosY < 0.5 + ballRadius) {
+        ballPosY = 0.5 + ballRadius;
+        ballVelY = -ballVelY * 0.6;
+
+        // 摩擦
+        ballVelX *= 0.98;
+        ballVelZ *= 0.98;
+      }
+
+      // 上端チェック
+      if (ballPosZ < -tableLength / 2 + ballRadius) {
+        ballPosZ = -tableLength / 2 + ballRadius;
+        ballVelZ = -ballVelZ * 0.8;
+      }
+
+      // ボール位置更新
+      ball.position.setValues(ballPosX, ballPosY, ballPosZ);
+
+      // フリッパーとの衝突チェック
+      _checkFlipperCollision();
+
+      // 穴判定
+      _checkHoleCollision();
+
+      // ボールの回転
+      ball.rotation.x += ballVelZ * deltaTime;
+      ball.rotation.z -= ballVelX * deltaTime;
     }
-    if (ballPosX > tableWidth / 2 - ballRadius) {
-      ballPosX = tableWidth / 2 - ballRadius;
-      ballVelX = -ballVelX * 0.8;
-    }
-
-    // テーブル上面チェック
-    if (ballPosY < 0.5 + ballRadius) {
-      ballPosY = 0.5 + ballRadius;
-      ballVelY = -ballVelY * 0.6;
-
-      // 摩擦
-      ballVelX *= 0.98;
-      ballVelZ *= 0.98;
-    }
-
-    // 上端チェック
-    if (ballPosZ < -tableLength / 2 + ballRadius) {
-      ballPosZ = -tableLength / 2 + ballRadius;
-      ballVelZ = -ballVelZ * 0.8;
-    }
-
-    // ボール位置更新
-    ball.position.setValues(ballPosX, ballPosY, ballPosZ);
 
     // フリッパーアニメーション
     _updateFlippers(deltaTime);
-
-    // フリッパーとの衝突チェック
-    _checkFlipperCollision();
-
-    // 穴判定
-    _checkHoleCollision();
-
-    // ボールの回転
-    ball.rotation.x += ballVelZ * deltaTime;
-    ball.rotation.z -= ballVelX * deltaTime;
   }
 
   void _updateFlippers(double deltaTime) {
     // 左フリッパー
     if (isFlipperLeftActive) {
-      leftFlipperAngle = (leftFlipperAngle + flipperSpeed * deltaTime)
-          .clamp(0.0, maxFlipperAngle);
+      leftFlipperAngle = (leftFlipperAngle + flipperSpeed * deltaTime).clamp(
+        0.0,
+        maxFlipperAngle,
+      );
     } else {
-      leftFlipperAngle = (leftFlipperAngle - flipperSpeed * deltaTime)
-          .clamp(0.0, maxFlipperAngle);
+      leftFlipperAngle = (leftFlipperAngle - flipperSpeed * deltaTime).clamp(
+        0.0,
+        maxFlipperAngle,
+      );
     }
     leftFlipper.rotation.y = leftFlipperAngle;
 
     // 右フリッパー
     if (isFlipperRightActive) {
-      rightFlipperAngle = (rightFlipperAngle - flipperSpeed * deltaTime)
-          .clamp(-maxFlipperAngle, 0.0);
+      rightFlipperAngle = (rightFlipperAngle - flipperSpeed * deltaTime).clamp(
+        -maxFlipperAngle,
+        0.0,
+      );
     } else {
-      rightFlipperAngle = (rightFlipperAngle + flipperSpeed * deltaTime)
-          .clamp(-maxFlipperAngle, 0.0);
+      rightFlipperAngle = (rightFlipperAngle + flipperSpeed * deltaTime).clamp(
+        -maxFlipperAngle,
+        0.0,
+      );
     }
     rightFlipper.rotation.y = rightFlipperAngle;
   }
