@@ -8,6 +8,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
+
 import 'translations.g.dart';
 
 // Path: <root>
@@ -29,7 +30,7 @@ class TranslationsEn extends Translations {
 
 	late final TranslationsEn _root = this; // ignore: unused_field
 
-	@override 
+	@override
 	TranslationsEn $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsEn(meta: meta ?? this.$meta);
 
 	// Translations
@@ -43,6 +44,6 @@ class _TranslationsAppEn extends TranslationsAppJa {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get appName => 'Template';
+	@override String get appName => 'roulette';
 	@override String get welcome => 'Welcome';
 }

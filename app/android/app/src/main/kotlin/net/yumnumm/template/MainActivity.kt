@@ -1,4 +1,4 @@
-package net.yumnumm.template
+package net.yumnumm.roulette
 
 import io.flutter.embedding.android.FlutterActivity
 

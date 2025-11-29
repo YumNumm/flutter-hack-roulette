@@ -1,4 +1,4 @@
-# Tokyo Flutter Hackathon Routelle App
+# Tokyo Flutter Hackathon roulette App
 
 ## Setup
 

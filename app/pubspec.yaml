@@ -1,5 +1,6 @@
-name: template
+name: roulette
 version: 0.0.1
+publish_to: none
 
 environment:
   sdk: ^3.10.0

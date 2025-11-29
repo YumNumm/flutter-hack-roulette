@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:template/core/gen/i18n/translations.g.dart';
-import 'package:template/core/router/router.dart';
+import 'package:roulette/core/gen/i18n/translations.g.dart';
+import 'package:roulette/core/router/router.dart';
 
 class App extends ConsumerWidget {
   const App({
@@ -15,7 +15,7 @@ class App extends ConsumerWidget {
 
     return TranslationProvider(
       child: MaterialApp.router(
-        title: 'template',
+        title: 'roulette',
         routerConfig: routerConfig,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,

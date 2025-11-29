@@ -23,7 +23,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "net.yumnumm.template"
+    namespace = "net.yumnumm.roulette"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "net.yumnumm.template"
+        applicationId = "net.yumnumm.roulette"
         dartDefines["APP_ID_SUFFIX"]?.let {
             applicationIdSuffix = it
         }
@@ -45,7 +45,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        resValue("string", "APP_NAME", dartDefines["APP_NAME"] ?: "template")
+        resValue("string", "APP_NAME", dartDefines["APP_NAME"] ?: "roulette")
     }
 
     signingConfigs {

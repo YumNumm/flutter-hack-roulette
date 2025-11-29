@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:template/features/home/ui/page/home_page.dart';
+import 'package:roulette/features/home/ui/page/home_page.dart';
 
 part 'main.g.dart';
 

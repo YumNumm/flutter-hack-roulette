@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:template/core/providers/package_info.dart';
+import 'package:roulette/core/providers/package_info.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
