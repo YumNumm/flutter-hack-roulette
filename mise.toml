@@ -6,6 +6,7 @@ actionlint = "latest"
 age = "latest"
 gitleaks = "latest"
 pinact = "latest"
+ruby = "latest"
 
 [settings]
 experimental = true

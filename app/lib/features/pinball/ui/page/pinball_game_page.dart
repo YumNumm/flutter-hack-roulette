@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:roulette/core/router/routes/main.dart';
 import 'package:roulette/features/pinball/data/model/game_state.dart';
 import 'package:roulette/features/pinball/data/notifier/pinball_game_notifier.dart';
 import 'package:roulette/features/pinball/data/notifier/team_notifier.dart';
@@ -21,9 +23,15 @@ class PinballGamePage extends HookConsumerWidget {
     // ゲーム開始
     useEffect(
       () {
-        ref
-            .read(pinballGameProvider.notifier)
-            .startGame(currentTeamIndex.value);
+        unawaited(
+          WidgetsBinding.instance.endOfFrame.then(
+            (_) {
+              ref
+                  .read(pinballGameProvider.notifier)
+                  .startGame(currentTeamIndex.value);
+            },
+          ),
+        );
         return null;
       },
       [],
@@ -97,7 +105,7 @@ class PinballGamePage extends HookConsumerWidget {
                                 .calculatePresentationOrder();
                             if (context.mounted) {
                               Navigator.of(context).pop();
-                              context.go('/result');
+                              await const ResultRoute().push<void>(context);
                             }
                           },
                           child: const Text('結果を見る'),

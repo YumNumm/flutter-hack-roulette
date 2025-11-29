@@ -55,4 +55,4 @@ final class ResultRepositoryProvider
   }
 }
 
-String _$resultRepositoryHash() => r'8d888d0db20183d6ce6b3ba3d6dd85c707d1e1f7';
+String _$resultRepositoryHash() => r'a6404ddc0e727e5c7a45bb764e70519999b4b4a9';

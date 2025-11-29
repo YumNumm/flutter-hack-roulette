@@ -37,6 +37,10 @@ checksum = "sha256:1b067e4990dadafe2e916db00c5e6d17e3faa9885d91bd99ce2d8b1487281
 size = 4404234
 url = "https://github.com/suzuki-shunsuke/pinact/releases/download/v3.4.5/pinact_darwin_arm64.tar.gz"
 
+[[tools.ruby]]
+version = "3.4.7"
+backend = "core:ruby"
+
 [[tools.xcbeautify]]
 version = "3.1.1"
 backend = "aqua:cpisciotta/xcbeautify"

@@ -10,17 +10,19 @@ part 'result_repository.g.dart';
 @riverpod
 ResultRepository resultRepository(Ref ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return ResultRepository(prefs);
+  return ResultRepository(sharedPreferences: prefs);
 }
 
 class ResultRepository {
-  ResultRepository(this.prefs);
+  ResultRepository({
+    required this.sharedPreferences,
+  });
 
-  final SharedPreferences prefs;
+  final SharedPreferences sharedPreferences;
   static const _resultsKey = 'pinball_results';
 
   List<PinballResult> getResults() {
-    final resultsJson = prefs.getString(_resultsKey);
+    final resultsJson = sharedPreferences.getString(_resultsKey);
     if (resultsJson == null) {
       return [];
     }
@@ -35,7 +37,7 @@ class ResultRepository {
 
   Future<void> saveResults(List<PinballResult> results) async {
     final resultsJson = jsonEncode(results.map((r) => r.toJson()).toList());
-    await prefs.setString(_resultsKey, resultsJson);
+    await sharedPreferences.setString(_resultsKey, resultsJson);
   }
 
   Future<void> addResult(PinballResult result) async {
@@ -45,6 +47,6 @@ class ResultRepository {
   }
 
   Future<void> clearResults() async {
-    await prefs.remove(_resultsKey);
+    await sharedPreferences.remove(_resultsKey);
   }
 }
