@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:roulette/app.dart';
+import 'package:roulette/core/gen/i18n/translations.g.dart';
 import 'package:roulette/core/providers/package_info.dart';
+import 'package:roulette/core/providers/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,12 +22,17 @@ Future<void> main() async {
 
   final container = ProviderContainer();
 
-  await container.read(packageInfoInternalProvider.future);
+  await Future.wait([
+    container.read(packageInfoInternalProvider.future),
+    container.read(sharedPreferencesInternalProvider.future),
+  ]);
 
   runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const App(),
+    TranslationProvider(
+      child: UncontrolledProviderScope(
+        container: container,
+        child: const App(),
+      ),
     ),
   );
 }
