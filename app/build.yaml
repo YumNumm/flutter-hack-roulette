@@ -1,0 +1,32 @@
+targets:
+  $default:
+    builders:
+      # https://github.com/google/json_serializable.dart/tree/master/json_serializable#build-configuration
+      json_serializable:
+        options:
+          field_rename: snake
+          checked: true
+      # https://github.com/dart-lang/source_gen#ignore_for_file
+      source_gen:combining_builder:
+        options:
+          ignore_for_file:
+            - type=lint
+            - type=warning
+            - duplicate_ignore
+            - unused_element_parameter
+      slang_build_runner:
+        options:
+          base_locale: ja
+          timestamp: false
+          input_directory: lib/core/i18n
+          input_file_pattern: .yaml
+          output_directory: lib/core/gen/i18n
+          output_file_name: translations.g.dart
+          fallback_strategy: base_locale
+          key_case: camel
+          sanitization:
+            enable: true
+            prefix: k
+            case: camel
+          namespaces: true
+          flat_map: false

@@ -1,0 +1,47 @@
+[[tools.actionlint]]
+version = "1.7.9"
+backend = "aqua:rhysd/actionlint"
+
+[tools.actionlint.platforms.macos-arm64]
+checksum = "sha256:855e49e823fc68c6371fd6967e359cde11912d8d44fed343283c8e6e943bd789"
+size = 2068001
+url = "https://github.com/rhysd/actionlint/releases/download/v1.7.9/actionlint_1.7.9_darwin_arm64.tar.gz"
+
+[[tools.age]]
+version = "1.2.1"
+backend = "aqua:FiloSottile/age"
+
+[[tools."aqua:suzuki-shunsuke/tfcmt"]]
+version = "4.14.12"
+backend = "aqua:suzuki-shunsuke/tfcmt"
+
+[[tools.flutter]]
+version = "3.38.1-stable"
+backend = "asdf:flutter"
+
+[[tools.gitleaks]]
+version = "8.30.0"
+backend = "aqua:gitleaks/gitleaks"
+
+[tools.gitleaks.platforms.macos-arm64]
+checksum = "sha256:b251ab2bcd4cd8ba9e56ff37698c033ebf38582b477d21ebd86586d927cf87e7"
+size = 7887640
+url = "https://github.com/gitleaks/gitleaks/releases/download/v8.30.0/gitleaks_8.30.0_darwin_arm64.tar.gz"
+
+[[tools.pinact]]
+version = "3.4.5"
+backend = "aqua:suzuki-shunsuke/pinact"
+
+[tools.pinact.platforms.macos-arm64]
+checksum = "sha256:1b067e4990dadafe2e916db00c5e6d17e3faa9885d91bd99ce2d8b1487281299"
+size = 4404234
+url = "https://github.com/suzuki-shunsuke/pinact/releases/download/v3.4.5/pinact_darwin_arm64.tar.gz"
+
+[[tools.xcbeautify]]
+version = "3.1.1"
+backend = "aqua:cpisciotta/xcbeautify"
+
+[tools.xcbeautify.platforms.macos-arm64]
+checksum = "sha256:6099d0ed50e340adf0da9c1e103a62045e6c66c1dcf786440a9783bb49dcc69f"
+size = 830682
+url = "https://github.com/cpisciotta/xcbeautify/releases/download/3.1.1/xcbeautify-3.1.1-arm64-apple-macosx.zip"

@@ -1,0 +1,9 @@
+{
+  extends: ["config:base"],
+  timezone: "Asia/Tokyo",
+  schedule: ["every day at 09:00"],
+  major: {
+    stabilityDays: 2,
+  },
+  separateMinorPatch: true,
+}
