@@ -1,0 +1,53 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+// ignore_for_file: type=lint, type=warning, duplicate_ignore, unused_element_parameter
+
+part of 'team_repository.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(teamRepository)
+const teamRepositoryProvider = TeamRepositoryProvider._();
+
+final class TeamRepositoryProvider
+    extends $FunctionalProvider<TeamRepository, TeamRepository, TeamRepository>
+    with $Provider<TeamRepository> {
+  const TeamRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'teamRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$teamRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<TeamRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  TeamRepository create(Ref ref) {
+    return teamRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TeamRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TeamRepository>(value),
+    );
+  }
+}
+
+String _$teamRepositoryHash() => r'3995cf1a043cc98e4b1cc5feb544ac89872a2ba4';
