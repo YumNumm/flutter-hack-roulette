@@ -116,7 +116,7 @@ class _AmidaView extends HookConsumerWidget {
     return Column(
       children: [
         Expanded(
-          child: GestureDetector(
+            child: GestureDetector(
             onTap: () async {
               if (amidaState.presentationState.status ==
                   PresentationStatus.notStarted) {
@@ -125,13 +125,13 @@ class _AmidaView extends HookConsumerWidget {
                     .startPresentation();
               } else if (amidaState.presentationState.status ==
                       PresentationStatus.presenting &&
-                  animation >= 1.0) {
+                  animation >= 1) {
                 await ref
                     .read(amidaStateProvider.notifier)
                     .showNextTeam();
               }
             },
-            child: Container(
+            child: ColoredBox(
               color: Colors.white,
               child: CustomPaint(
                 painter: AmidaPainter(
@@ -242,7 +242,7 @@ class _BottomPanel extends HookConsumerWidget {
       final path = amidaState.paths![currentIndex];
       final order = path.endIndex + 1;
 
-      if (animationProgress >= 1.0) {
+      if (animationProgress >= 1) {
         return Container(
           padding: const EdgeInsets.all(24),
           color: Colors.blue.shade50,
@@ -378,4 +378,3 @@ class _ResultList extends StatelessWidget {
     );
   }
 }
-

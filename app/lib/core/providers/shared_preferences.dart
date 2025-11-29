@@ -14,5 +14,3 @@ Future<SharedPreferences> sharedPreferencesInternal(
 SharedPreferences sharedPreferences(Ref ref) {
   return ref.watch(sharedPreferencesInternalProvider).requireValue;
 }
-
-

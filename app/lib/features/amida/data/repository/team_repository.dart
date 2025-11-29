@@ -27,7 +27,7 @@ class TeamRepository {
       return [];
     }
 
-    final List<dynamic> jsonList = jsonDecode(jsonString) as List<dynamic>;
+    final jsonList = jsonDecode(jsonString) as List<dynamic>;
     return jsonList
         .map((json) => Team.fromJson(json as Map<String, dynamic>))
         .toList();
@@ -55,4 +55,3 @@ class TeamRepository {
     await _prefs.remove(_teamsKey);
   }
 }
-

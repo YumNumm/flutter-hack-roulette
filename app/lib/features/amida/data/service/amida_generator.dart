@@ -22,7 +22,7 @@ class AmidaGenerator {
 
     for (var i = 0; i < horizontalLineCount; i++) {
       final yPosition = (i + 1) / (horizontalLineCount + 1);
-      
+
       final leftIndex = random.nextInt(teamCount - 1);
       horizontalLines.add(
         HorizontalLine(
@@ -107,13 +107,12 @@ class AmidaGenerator {
 
   List<int> calculateResultOrder(AmidaLadder ladder) {
     final paths = calculatePaths(ladder);
-    
+
     final resultOrder = List<int>.filled(ladder.teamCount, 0);
     for (var i = 0; i < paths.length; i++) {
       resultOrder[paths[i].endIndex] = i;
     }
-    
+
     return resultOrder;
   }
 }
-

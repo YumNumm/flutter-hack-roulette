@@ -13,18 +13,16 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final routerConfig = ref.watch(routerProvider);
 
-    return TranslationProvider(
-      child: MaterialApp.router(
-        title: 'roulette',
-        routerConfig: routerConfig,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        locale: TranslationProvider.of(context).locale.flutterLocale,
-        supportedLocales: AppLocaleUtils.supportedLocales,
-      ),
+    return MaterialApp.router(
+      title: 'roulette',
+      routerConfig: routerConfig,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: TranslationProvider.of(context).locale.flutterLocale,
+      supportedLocales: AppLocaleUtils.supportedLocales,
     );
   }
 }

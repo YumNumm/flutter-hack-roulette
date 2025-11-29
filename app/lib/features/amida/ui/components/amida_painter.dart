@@ -17,14 +17,13 @@ class AmidaPainter extends CustomPainter {
   final double animationProgress;
   final List<AmidaPath> highlightedPaths;
 
-  static const double padding = 40.0;
-  static const double topPadding = 60.0;
-  static const double bottomPadding = 60.0;
+  static const double padding = 40;
+  static const double topPadding = 60;
+  static const double bottomPadding = 60;
 
   @override
   void paint(Canvas canvas, Size size) {
     final width = size.width;
-    final height = size.height;
     final columnSpacing = (width - padding * 2) / (teamCount - 1);
 
     _drawVerticalLines(canvas, size, columnSpacing);
@@ -58,7 +57,7 @@ class AmidaPainter extends CustomPainter {
   void _drawHorizontalLines(Canvas canvas, Size size, double columnSpacing) {
     final paint = Paint()
       ..color = Colors.grey.shade600
-      ..strokeWidth = 3.0
+      ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
     final availableHeight = size.height - topPadding - bottomPadding;
@@ -81,13 +80,13 @@ class AmidaPainter extends CustomPainter {
 
     final paint = Paint()
       ..color = Colors.blue.shade600
-      ..strokeWidth = 5.0
+      ..strokeWidth = 5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     final glowPaint = Paint()
-      ..color = Colors.blue.withOpacity(0.3)
-      ..strokeWidth = 12.0
+      ..color = Colors.blue.withValues(alpha: 0.3)
+      ..strokeWidth = 12
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -108,18 +107,18 @@ class AmidaPainter extends CustomPainter {
       columnSpacing,
       animationProgress,
     );
-    
+
     if (endPoint != null) {
       final circlePaint = Paint()
         ..color = Colors.blue.shade600
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(endPoint, 8, circlePaint);
-      
+
       final outerCirclePaint = Paint()
-        ..color = Colors.blue.withOpacity(0.3)
+        ..color = Colors.blue.withValues(alpha: 0.3)
         ..style = PaintingStyle.fill;
-      
+
       canvas.drawCircle(endPoint, 12, outerCirclePaint);
     }
   }
@@ -131,8 +130,8 @@ class AmidaPainter extends CustomPainter {
     AmidaPath path,
   ) {
     final paint = Paint()
-      ..color = Colors.green.withOpacity(0.5)
-      ..strokeWidth = 4.0
+      ..color = Colors.green.withValues(alpha: 0.5)
+      ..strokeWidth = 4
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -155,7 +154,9 @@ class AmidaPainter extends CustomPainter {
     final path = Path();
     final availableHeight = size.height - topPadding - bottomPadding;
 
-    if (points.isEmpty) return path;
+    if (points.isEmpty) {
+      return path;
+    }
 
     final totalLength = _calculateTotalLength(points, size, columnSpacing);
     final targetLength = totalLength * progress;
@@ -208,7 +209,9 @@ class AmidaPainter extends CustomPainter {
     double columnSpacing,
     double progress,
   ) {
-    if (points.isEmpty) return null;
+    if (points.isEmpty) {
+      return null;
+    }
 
     final availableHeight = size.height - topPadding - bottomPadding;
     final totalLength = _calculateTotalLength(points, size, columnSpacing);
@@ -252,7 +255,9 @@ class AmidaPainter extends CustomPainter {
     Size size,
     double columnSpacing,
   ) {
-    if (points.length < 2) return 0.0;
+    if (points.length < 2) {
+      return 0;
+    }
 
     final availableHeight = size.height - topPadding - bottomPadding;
     var totalLength = 0.0;
@@ -279,4 +284,3 @@ class AmidaPainter extends CustomPainter {
         oldDelegate.highlightedPaths != highlightedPaths;
   }
 }
-

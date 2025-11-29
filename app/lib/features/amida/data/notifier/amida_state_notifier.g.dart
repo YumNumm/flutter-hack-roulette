@@ -36,7 +36,7 @@ final class AmidaStateNotifierProvider
 }
 
 String _$amidaStateNotifierHash() =>
-    r'57c7021a25aec4c0a849256fe9373e58ed1dea5e';
+    r'37dfb52c50b462448b5b487af05d86476356e378';
 
 abstract class _$AmidaStateNotifier extends $AsyncNotifier<AmidaState> {
   FutureOr<AmidaState> build();

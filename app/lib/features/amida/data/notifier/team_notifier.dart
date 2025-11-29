@@ -19,7 +19,7 @@ class TeamNotifier extends _$TeamNotifier {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
     );
-    
+
     await repository.addTeam(team);
     ref.invalidateSelf();
   }
@@ -36,4 +36,3 @@ class TeamNotifier extends _$TeamNotifier {
     ref.invalidateSelf();
   }
 }
-

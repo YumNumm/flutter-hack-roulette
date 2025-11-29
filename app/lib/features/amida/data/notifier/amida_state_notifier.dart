@@ -35,7 +35,7 @@ class AmidaStateNotifier extends _$AmidaStateNotifier {
   @override
   Future<AmidaState> build() async {
     final repository = ref.watch(amidaStateRepositoryProvider);
-    
+
     final ladder = await repository.getLadder();
     final result = await repository.getResult();
     final presentationState = await repository.getPresentationState();
@@ -75,7 +75,7 @@ class AmidaStateNotifier extends _$AmidaStateNotifier {
     await repository.saveResult(result);
     await repository.savePresentationState(PresentationState.initial);
 
-    state = AsyncData(
+    state = AsyncValue.data(
       AmidaState(
         ladder: ladder,
         result: result,
@@ -122,7 +122,7 @@ class AmidaStateNotifier extends _$AmidaStateNotifier {
       final repository = ref.read(amidaStateRepositoryProvider);
       await repository.savePresentationState(completedState);
 
-      state = AsyncData(
+      state = AsyncValue.data(
         currentState.copyWith(presentationState: completedState),
       );
       return;
@@ -136,7 +136,7 @@ class AmidaStateNotifier extends _$AmidaStateNotifier {
     final repository = ref.read(amidaStateRepositoryProvider);
     await repository.savePresentationState(newPresentationState);
 
-    state = AsyncData(
+    state = AsyncValue.data(
       currentState.copyWith(presentationState: newPresentationState),
     );
   }
@@ -145,7 +145,7 @@ class AmidaStateNotifier extends _$AmidaStateNotifier {
     final repository = ref.read(amidaStateRepositoryProvider);
     await repository.resetAll();
 
-    state = const AsyncData(AmidaState());
+    state = const AsyncValue.data(AmidaState());
   }
 }
 

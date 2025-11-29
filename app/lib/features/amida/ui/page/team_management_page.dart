@@ -18,7 +18,8 @@ class TeamManagementPage extends HookConsumerWidget {
       appBar: AppBar(
         title: const Text('ハッカソン登壇順決定'),
         actions: [
-          if (amidaStateAsync.valueOrNull?.hasLadder ?? false)
+          if (amidaStateAsync.hasValue &&
+              (amidaStateAsync.value?.hasLadder ?? false))
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: () async {
@@ -113,7 +114,9 @@ class _TeamList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final amidaState = ref.watch(amidaStateProvider).valueOrNull;
+    final amidaStateAsync = ref.watch(amidaStateProvider);
+    final amidaState =
+        amidaStateAsync.hasValue ? amidaStateAsync.value : null;
 
     if (teams.isEmpty) {
       return const Center(
@@ -201,4 +204,3 @@ class _TeamList extends HookConsumerWidget {
     );
   }
 }
-
