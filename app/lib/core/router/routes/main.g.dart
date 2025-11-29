@@ -8,16 +8,40 @@ part of 'main.dart';
 // GoRouterGenerator
 // **************************************************************************
 
-List<RouteBase> get $appRoutes => [$homeRoute];
+List<RouteBase> get $appRoutes => [$teamManagementRoute];
 
-RouteBase get $homeRoute =>
-    GoRouteData.$route(path: '/', factory: $HomeRoute._fromState);
+RouteBase get $teamManagementRoute => GoRouteData.$route(
+  path: '/',
+  factory: $TeamManagementRoute._fromState,
+  routes: [GoRouteData.$route(path: 'amida', factory: $AmidaRoute._fromState)],
+);
 
-mixin $HomeRoute on GoRouteData {
-  static HomeRoute _fromState(GoRouterState state) => const HomeRoute();
+mixin $TeamManagementRoute on GoRouteData {
+  static TeamManagementRoute _fromState(GoRouterState state) =>
+      const TeamManagementRoute();
 
   @override
   String get location => GoRouteData.$location('/');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $AmidaRoute on GoRouteData {
+  static AmidaRoute _fromState(GoRouterState state) => const AmidaRoute();
+
+  @override
+  String get location => GoRouteData.$location('/amida');
 
   @override
   void go(BuildContext context) => context.go(location);
