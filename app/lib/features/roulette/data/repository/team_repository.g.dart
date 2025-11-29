@@ -2,7 +2,7 @@
 
 // ignore_for_file: type=lint, type=warning, duplicate_ignore, unused_element_parameter
 
-part of 'pinball_game_notifier.dart';
+part of 'team_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -11,53 +11,52 @@ part of 'pinball_game_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(PinballGameNotifier)
-const pinballGameProvider = PinballGameNotifierProvider._();
+@ProviderFor(TeamRepository)
+const teamRepositoryProvider = TeamRepositoryProvider._();
 
-final class PinballGameNotifierProvider
-    extends $NotifierProvider<PinballGameNotifier, GameState> {
-  const PinballGameNotifierProvider._()
+final class TeamRepositoryProvider
+    extends $NotifierProvider<TeamRepository, List<Team>> {
+  const TeamRepositoryProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'pinballGameProvider',
+        name: r'teamRepositoryProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$pinballGameNotifierHash();
+  String debugGetCreateSourceHash() => _$teamRepositoryHash();
 
   @$internal
   @override
-  PinballGameNotifier create() => PinballGameNotifier();
+  TeamRepository create() => TeamRepository();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GameState value) {
+  Override overrideWithValue(List<Team> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<GameState>(value),
+      providerOverride: $SyncValueProvider<List<Team>>(value),
     );
   }
 }
 
-String _$pinballGameNotifierHash() =>
-    r'1af38a88d621cd40ce486f5adc958b1430257d24';
+String _$teamRepositoryHash() => r'f47adfee5340d575f5c94ee1563981e066779ddc';
 
-abstract class _$PinballGameNotifier extends $Notifier<GameState> {
-  GameState build();
+abstract class _$TeamRepository extends $Notifier<List<Team>> {
+  List<Team> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<GameState, GameState>;
+    final ref = this.ref as $Ref<List<Team>, List<Team>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<GameState, GameState>,
-              GameState,
+              AnyNotifier<List<Team>, List<Team>>,
+              List<Team>,
               Object?,
               Object?
             >;

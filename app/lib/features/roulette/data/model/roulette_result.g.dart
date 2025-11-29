@@ -2,20 +2,23 @@
 
 // ignore_for_file: type=lint, type=warning, duplicate_ignore, unused_element_parameter
 
-part of 'pinball_result.dart';
+part of 'roulette_result.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_PinballResult _$PinballResultFromJson(Map<String, dynamic> json) =>
+_RouletteResult _$RouletteResultFromJson(Map<String, dynamic> json) =>
     $checkedCreate(
-      '_PinballResult',
+      '_RouletteResult',
       json,
       ($checkedConvert) {
-        final val = _PinballResult(
+        final val = _RouletteResult(
           teamId: $checkedConvert('team_id', (v) => v as String),
-          holeNumber: $checkedConvert('hole_number', (v) => (v as num).toInt()),
+          selectedOrder: $checkedConvert(
+            'selected_order',
+            (v) => (v as num).toInt(),
+          ),
           timestamp: $checkedConvert(
             'timestamp',
             (v) => DateTime.parse(v as String),
@@ -23,12 +26,15 @@ _PinballResult _$PinballResultFromJson(Map<String, dynamic> json) =>
         );
         return val;
       },
-      fieldKeyMap: const {'teamId': 'team_id', 'holeNumber': 'hole_number'},
+      fieldKeyMap: const {
+        'teamId': 'team_id',
+        'selectedOrder': 'selected_order',
+      },
     );
 
-Map<String, dynamic> _$PinballResultToJson(_PinballResult instance) =>
+Map<String, dynamic> _$RouletteResultToJson(_RouletteResult instance) =>
     <String, dynamic>{
       'team_id': instance.teamId,
-      'hole_number': instance.holeNumber,
+      'selected_order': instance.selectedOrder,
       'timestamp': instance.timestamp.toIso8601String(),
     };

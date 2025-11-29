@@ -11,7 +11,7 @@ import 'package:slang/generated.dart';
 import 'translations.g.dart';
 
 // Path: <root>
-class TranslationsEn extends Translations {
+class TranslationsEn extends Translations with BaseTranslations<AppLocale, Translations> {
 	/// You can call this constructor and build your own translation instance of this locale.
 	/// Constructing via the enum [AppLocale.build] is preferred.
 	TranslationsEn({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver, TranslationMetadata<AppLocale, Translations>? meta})
@@ -43,6 +43,6 @@ class _TranslationsAppEn extends TranslationsAppJa {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get appName => 'roulette';
+	@override String get appName => 'Template';
 	@override String get welcome => 'Welcome';
 }

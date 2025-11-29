@@ -8,20 +8,18 @@ part of 'main.dart';
 // GoRouterGenerator
 // **************************************************************************
 
-List<RouteBase> get $appRoutes => [$teamManagementRoute];
+List<RouteBase> get $appRoutes => [
+  $teamSetupRoute,
+  $rouletteRoute,
+  $resultRoute,
+];
 
-RouteBase get $teamManagementRoute => GoRouteData.$route(
-  path: '/',
-  factory: $TeamManagementRoute._fromState,
-  routes: [
-    GoRouteData.$route(path: 'pinball', factory: $PinballRoute._fromState),
-    GoRouteData.$route(path: 'result', factory: $ResultRoute._fromState),
-  ],
-);
+RouteBase get $teamSetupRoute =>
+    GoRouteData.$route(path: '/', factory: $TeamSetupRoute._fromState);
 
-mixin $TeamManagementRoute on GoRouteData {
-  static TeamManagementRoute _fromState(GoRouterState state) =>
-      const TeamManagementRoute();
+mixin $TeamSetupRoute on GoRouteData {
+  static TeamSetupRoute _fromState(GoRouterState state) =>
+      const TeamSetupRoute();
 
   @override
   String get location => GoRouteData.$location('/');
@@ -40,11 +38,14 @@ mixin $TeamManagementRoute on GoRouteData {
   void replace(BuildContext context) => context.replace(location);
 }
 
-mixin $PinballRoute on GoRouteData {
-  static PinballRoute _fromState(GoRouterState state) => const PinballRoute();
+RouteBase get $rouletteRoute =>
+    GoRouteData.$route(path: '/roulette', factory: $RouletteRoute._fromState);
+
+mixin $RouletteRoute on GoRouteData {
+  static RouletteRoute _fromState(GoRouterState state) => const RouletteRoute();
 
   @override
-  String get location => GoRouteData.$location('/pinball');
+  String get location => GoRouteData.$location('/roulette');
 
   @override
   void go(BuildContext context) => context.go(location);
@@ -59,6 +60,9 @@ mixin $PinballRoute on GoRouteData {
   @override
   void replace(BuildContext context) => context.replace(location);
 }
+
+RouteBase get $resultRoute =>
+    GoRouteData.$route(path: '/result', factory: $ResultRoute._fromState);
 
 mixin $ResultRoute on GoRouteData {
   static ResultRoute _fromState(GoRouterState state) => const ResultRoute();

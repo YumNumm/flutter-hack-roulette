@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Team {
 
- String get id; String get name; int? get holeNumber;// 落ちた穴の番号（1-6など）
- int? get presentationOrder;
+ String get id; String get name; int? get selectedOrder;
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +28,16 @@ $TeamCopyWith<Team> get copyWith => _$TeamCopyWithImpl<Team>(this as Team, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Team&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.holeNumber, holeNumber) || other.holeNumber == holeNumber)&&(identical(other.presentationOrder, presentationOrder) || other.presentationOrder == presentationOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Team&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.selectedOrder, selectedOrder) || other.selectedOrder == selectedOrder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,holeNumber,presentationOrder);
+int get hashCode => Object.hash(runtimeType,id,name,selectedOrder);
 
 @override
 String toString() {
-  return 'Team(id: $id, name: $name, holeNumber: $holeNumber, presentationOrder: $presentationOrder)';
+  return 'Team(id: $id, name: $name, selectedOrder: $selectedOrder)';
 }
 
 
@@ -49,7 +48,7 @@ abstract mixin class $TeamCopyWith<$Res>  {
   factory $TeamCopyWith(Team value, $Res Function(Team) _then) = _$TeamCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, int? holeNumber, int? presentationOrder
+ String id, String name, int? selectedOrder
 });
 
 
@@ -66,12 +65,11 @@ class _$TeamCopyWithImpl<$Res>
 
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? holeNumber = freezed,Object? presentationOrder = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? selectedOrder = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,holeNumber: freezed == holeNumber ? _self.holeNumber : holeNumber // ignore: cast_nullable_to_non_nullable
-as int?,presentationOrder: freezed == presentationOrder ? _self.presentationOrder : presentationOrder // ignore: cast_nullable_to_non_nullable
+as String,selectedOrder: freezed == selectedOrder ? _self.selectedOrder : selectedOrder // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
 }
@@ -157,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  int? holeNumber,  int? presentationOrder)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  int? selectedOrder)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Team() when $default != null:
-return $default(_that.id,_that.name,_that.holeNumber,_that.presentationOrder);case _:
+return $default(_that.id,_that.name,_that.selectedOrder);case _:
   return orElse();
 
 }
@@ -178,10 +176,10 @@ return $default(_that.id,_that.name,_that.holeNumber,_that.presentationOrder);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  int? holeNumber,  int? presentationOrder)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  int? selectedOrder)  $default,) {final _that = this;
 switch (_that) {
 case _Team():
-return $default(_that.id,_that.name,_that.holeNumber,_that.presentationOrder);case _:
+return $default(_that.id,_that.name,_that.selectedOrder);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +196,10 @@ return $default(_that.id,_that.name,_that.holeNumber,_that.presentationOrder);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  int? holeNumber,  int? presentationOrder)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  int? selectedOrder)?  $default,) {final _that = this;
 switch (_that) {
 case _Team() when $default != null:
-return $default(_that.id,_that.name,_that.holeNumber,_that.presentationOrder);case _:
+return $default(_that.id,_that.name,_that.selectedOrder);case _:
   return null;
 
 }
@@ -213,14 +211,12 @@ return $default(_that.id,_that.name,_that.holeNumber,_that.presentationOrder);ca
 @JsonSerializable()
 
 class _Team implements Team {
-  const _Team({required this.id, required this.name, this.holeNumber, this.presentationOrder});
+  const _Team({required this.id, required this.name, this.selectedOrder});
   factory _Team.fromJson(Map<String, dynamic> json) => _$TeamFromJson(json);
 
 @override final  String id;
 @override final  String name;
-@override final  int? holeNumber;
-// 落ちた穴の番号（1-6など）
-@override final  int? presentationOrder;
+@override final  int? selectedOrder;
 
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +231,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Team&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.holeNumber, holeNumber) || other.holeNumber == holeNumber)&&(identical(other.presentationOrder, presentationOrder) || other.presentationOrder == presentationOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Team&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.selectedOrder, selectedOrder) || other.selectedOrder == selectedOrder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,holeNumber,presentationOrder);
+int get hashCode => Object.hash(runtimeType,id,name,selectedOrder);
 
 @override
 String toString() {
-  return 'Team(id: $id, name: $name, holeNumber: $holeNumber, presentationOrder: $presentationOrder)';
+  return 'Team(id: $id, name: $name, selectedOrder: $selectedOrder)';
 }
 
 
@@ -255,7 +251,7 @@ abstract mixin class _$TeamCopyWith<$Res> implements $TeamCopyWith<$Res> {
   factory _$TeamCopyWith(_Team value, $Res Function(_Team) _then) = __$TeamCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, int? holeNumber, int? presentationOrder
+ String id, String name, int? selectedOrder
 });
 
 
@@ -272,12 +268,11 @@ class __$TeamCopyWithImpl<$Res>
 
 /// Create a copy of Team
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? holeNumber = freezed,Object? presentationOrder = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? selectedOrder = freezed,}) {
   return _then(_Team(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String,holeNumber: freezed == holeNumber ? _self.holeNumber : holeNumber // ignore: cast_nullable_to_non_nullable
-as int?,presentationOrder: freezed == presentationOrder ? _self.presentationOrder : presentationOrder // ignore: cast_nullable_to_non_nullable
+as String,selectedOrder: freezed == selectedOrder ? _self.selectedOrder : selectedOrder // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
 }

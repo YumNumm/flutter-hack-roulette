@@ -1,40 +1,38 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:roulette/features/pinball/ui/page/pinball_game_page.dart';
-import 'package:roulette/features/pinball/ui/page/result_page.dart';
-import 'package:roulette/features/pinball/ui/page/team_management_page.dart';
+import 'package:template/features/roulette/ui/page/result_page.dart';
+import 'package:template/features/roulette/ui/page/roulette_page.dart';
+import 'package:template/features/roulette/ui/page/team_setup_page.dart';
 
 part 'main.g.dart';
 
-@TypedGoRoute<TeamManagementRoute>(
+@TypedGoRoute<TeamSetupRoute>(
   path: '/',
-  routes: [
-    TypedGoRoute<PinballRoute>(
-      path: 'pinball',
-    ),
-    TypedGoRoute<ResultRoute>(
-      path: 'result',
-    ),
-  ],
 )
-class TeamManagementRoute extends GoRouteData with $TeamManagementRoute {
-  const TeamManagementRoute();
+class TeamSetupRoute extends GoRouteData with $TeamSetupRoute {
+  const TeamSetupRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const TeamManagementPage();
+    return const TeamSetupPage();
   }
 }
 
-class PinballRoute extends GoRouteData with $PinballRoute {
-  const PinballRoute();
+@TypedGoRoute<RouletteRoute>(
+  path: '/roulette',
+)
+class RouletteRoute extends GoRouteData with $RouletteRoute {
+  const RouletteRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const PinballGamePage();
+    return const RoulettePage();
   }
 }
 
+@TypedGoRoute<ResultRoute>(
+  path: '/result',
+)
 class ResultRoute extends GoRouteData with $ResultRoute {
   const ResultRoute();
 
