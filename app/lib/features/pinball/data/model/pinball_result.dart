@@ -14,5 +14,3 @@ abstract class PinballResult with _$PinballResult {
   factory PinballResult.fromJson(Map<String, dynamic> json) =>
       _$PinballResultFromJson(json);
 }
-
-

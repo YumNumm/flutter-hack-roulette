@@ -27,10 +27,11 @@ Future<void> main() async {
     container.read(sharedPreferencesInternalProvider.future),
   ]);
 
+  // ignore: missing_provider_scope
   runApp(
-    TranslationProvider(
-      child: UncontrolledProviderScope(
-        container: container,
+    UncontrolledProviderScope(
+      container: container,
+      child: TranslationProvider(
         child: const App(),
       ),
     ),

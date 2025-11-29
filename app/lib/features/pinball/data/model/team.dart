@@ -14,5 +14,3 @@ abstract class Team with _$Team {
 
   factory Team.fromJson(Map<String, dynamic> json) => _$TeamFromJson(json);
 }
-
-

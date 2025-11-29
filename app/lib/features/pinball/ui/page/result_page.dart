@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:roulette/features/pinball/data/model/team.dart';
 import 'package:roulette/features/pinball/data/notifier/team_notifier.dart';
 
 class ResultPage extends HookConsumerWidget {
@@ -28,7 +29,7 @@ class ResultPage extends HookConsumerWidget {
       body: teamsAsync.when(
         data: (teams) {
           // 穴番号でソート
-          final sortedTeams = List.from(teams)
+          final sortedTeams = List<Team>.from(teams)
             ..sort((a, b) {
               if (a.holeNumber == null) {
                 return 1;
@@ -94,10 +95,10 @@ class ResultPage extends HookConsumerWidget {
                     final medalColor = index == 0
                         ? Colors.amber.shade700
                         : index == 1
-                            ? Colors.grey.shade400
-                            : index == 2
-                                ? Colors.brown.shade400
-                                : Colors.blue;
+                        ? Colors.grey.shade400
+                        : index == 2
+                        ? Colors.brown.shade400
+                        : Colors.blue;
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -166,4 +167,3 @@ class ResultPage extends HookConsumerWidget {
     );
   }
 }
-

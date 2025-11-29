@@ -35,7 +35,7 @@ final class TeamNotifierProvider
   TeamNotifier create() => TeamNotifier();
 }
 
-String _$teamNotifierHash() => r'71f32b9bb6cd971976a4da5d563ae53d189b74a5';
+String _$teamNotifierHash() => r'081c46417016abaddb44148018c1595a76fe2b33';
 
 abstract class _$TeamNotifier extends $AsyncNotifier<List<Team>> {
   FutureOr<List<Team>> build();

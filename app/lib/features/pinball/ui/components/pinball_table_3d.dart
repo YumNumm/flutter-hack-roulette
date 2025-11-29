@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -17,9 +19,11 @@ class PinballTable3D extends HookConsumerWidget {
     useEffect(
       () {
         // 初期化処理
-        Future.microtask(() {
-          isInitialized.value = true;
-        });
+        unawaited(
+          WidgetsBinding.instance.endOfFrame.then((_) {
+            isInitialized.value = true;
+          }),
+        );
         return null;
       },
       [],
@@ -70,7 +74,9 @@ class PinballTable3D extends HookConsumerWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.cyan.shade400.withOpacity(0.5),
+                                color: Colors.cyan.shade400.withValues(
+                                  alpha: 0.5,
+                                ),
                                 blurRadius: 12,
                                 spreadRadius: 2,
                               ),

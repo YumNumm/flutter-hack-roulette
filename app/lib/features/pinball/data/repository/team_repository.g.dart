@@ -50,4 +50,4 @@ final class TeamRepositoryProvider
   }
 }
 
-String _$teamRepositoryHash() => r'3995cf1a043cc98e4b1cc5feb544ac89872a2ba4';
+String _$teamRepositoryHash() => r'0ae60875a0dfe23ce45e3faa96cdafda13384937';

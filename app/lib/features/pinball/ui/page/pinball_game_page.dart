@@ -82,9 +82,7 @@ class PinballGamePage extends HookConsumerWidget {
                             Navigator.of(context).pop();
                             currentTeamIndex.value++;
                             hasShownResultDialog.value = false;
-                            ref
-                                .read(pinballGameProvider.notifier)
-                                .nextTeam();
+                            ref.read(pinballGameProvider.notifier).nextTeam();
                             ref
                                 .read(pinballGameProvider.notifier)
                                 .startGame(currentTeamIndex.value);
@@ -186,9 +184,7 @@ class PinballGamePage extends HookConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: ElevatedButton(
                     onPressed: () {
-                      ref
-                          .read(pinballGameProvider.notifier)
-                          .launchBall();
+                      ref.read(pinballGameProvider.notifier).launchBall();
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -236,4 +232,3 @@ class PinballGamePage extends HookConsumerWidget {
     );
   }
 }
-

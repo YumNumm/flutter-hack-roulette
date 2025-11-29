@@ -20,5 +20,3 @@ abstract class GameState with _$GameState {
     int? lastHoleNumber,
   }) = _GameState;
 }
-
-

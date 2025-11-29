@@ -79,5 +79,3 @@ class FlipperControls extends StatelessWidget {
     );
   }
 }
-
-

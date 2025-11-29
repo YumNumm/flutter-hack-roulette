@@ -11,20 +11,21 @@ part 'team_repository.g.dart';
 @riverpod
 TeamRepository teamRepository(Ref ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return TeamRepository(prefs: prefs);
+  return TeamRepository(sharedPreferences: prefs);
 }
 
 class TeamRepository {
   TeamRepository({
-    required this.prefs,
+    required this.sharedPreferences,
   });
 
-  final SharedPreferences prefs;
+  final SharedPreferences sharedPreferences;
+
   static const _teamsKey = 'pinball_teams';
   static const _uuid = Uuid();
 
   List<Team> getTeams() {
-    final teamsJson = prefs.getString(_teamsKey);
+    final teamsJson = sharedPreferences.getString(_teamsKey);
     if (teamsJson == null) {
       return [];
     }
@@ -37,7 +38,7 @@ class TeamRepository {
 
   Future<void> saveTeams(List<Team> teams) async {
     final teamsJson = jsonEncode(teams.map((t) => t.toJson()).toList());
-    await prefs.setString(_teamsKey, teamsJson);
+    await sharedPreferences.setString(_teamsKey, teamsJson);
   }
 
   Future<void> addTeam(String name) async {

@@ -83,5 +83,3 @@ class PinballGameNotifier extends _$PinballGameNotifier {
     state = const GameState();
   }
 }
-
-

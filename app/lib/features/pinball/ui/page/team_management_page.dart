@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:roulette/core/router/routes/main.dart';
 import 'package:roulette/features/pinball/data/notifier/team_notifier.dart';
 
 class TeamManagementPage extends HookConsumerWidget {
@@ -23,7 +25,7 @@ class TeamManagementPage extends HookConsumerWidget {
                     const SnackBar(content: Text('チームを追加してください')),
                   );
                 } else {
-                  context.push('/pinball');
+                  unawaited(const PinballRoute().push<void>(context));
                 }
               });
             },
