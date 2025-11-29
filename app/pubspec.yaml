@@ -20,6 +20,7 @@ dependencies:
   json_annotation: ^4.9.0
   package_info_plus: ^9.0.0
   riverpod_annotation: ^3.0.3
+  shared_preferences: ^2.3.3
   slang: ^4.10.1
   slang_flutter: ^4.10.0
   talker_flutter: ^5.0.2
