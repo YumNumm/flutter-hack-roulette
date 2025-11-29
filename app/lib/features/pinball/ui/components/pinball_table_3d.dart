@@ -19,7 +19,9 @@ class PinballTable3D extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sceneController = useMemoized(() => _PinballSceneController(onHoleDetected));
+    final sceneController = useMemoized(
+      () => _PinballSceneController(onHoleDetected),
+    );
     final gameState = ref.watch(pinballGameProvider);
 
     useEffect(
@@ -59,7 +61,7 @@ class _PinballSceneController {
       setup: setup,
       settings: three.Settings(),
     );
-    
+
     // アニメーションタイマー起動
     _animationTimer = Timer.periodic(
       const Duration(milliseconds: 16),
@@ -69,7 +71,7 @@ class _PinballSceneController {
 
   final void Function(int) onHoleDetected;
   late three.ThreeJS threeJs;
-  
+
   late three.Mesh ball;
   late three.Mesh leftFlipper;
   late three.Mesh rightFlipper;
@@ -83,7 +85,7 @@ class _PinballSceneController {
   double ballVelX = 0;
   double ballVelY = 0;
   double ballVelZ = 0;
-  
+
   final gravity = -15.0; // 重力加速度
   final tableWidth = 12.0;
   final tableLength = 20.0;
@@ -93,17 +95,22 @@ class _PinballSceneController {
   bool isFlipperLeftActive = false;
   bool isFlipperRightActive = false;
 
-  double leftFlipperAngle = 0.0;
-  double rightFlipperAngle = 0.0;
+  var leftFlipperAngle = 0.0;
+  var rightFlipperAngle = 0.0;
   final flipperSpeed = 5.0;
   final maxFlipperAngle = math.pi / 3; // 60度
 
   Timer? _animationTimer;
-  bool _disposed = false;
+  var _disposed = false;
 
   Future<void> setup() async {
     // Camera
-    threeJs.camera = three.PerspectiveCamera(60, threeJs.width / threeJs.height, 0.1, 1000);
+    threeJs.camera = three.PerspectiveCamera(
+      60,
+      threeJs.width / threeJs.height,
+      0.1,
+      1000,
+    );
     threeJs.camera.position.setValues(0, 15, 15);
     threeJs.camera.lookAt(threeJs.scene.position);
 
@@ -120,7 +127,7 @@ class _PinballSceneController {
     directionalLight.castShadow = true;
     threeJs.scene.add(directionalLight);
 
-    final pointLight = three.PointLight(0x00ffff, 1.0, 50);
+    final pointLight = three.PointLight(0x00ffff, 1, 50);
     pointLight.position.setValues(0, 5, -8);
     threeJs.scene.add(pointLight);
 
@@ -178,7 +185,7 @@ class _PinballSceneController {
       'shininess': 100,
     });
     ball = three.Mesh(ballGeometry, ballMaterial);
-    
+
     // 初期位置
     ballPosX = tableWidth / 2 - 1.5;
     ballPosY = 2;
@@ -210,7 +217,12 @@ class _PinballSceneController {
 
   void _createHoles(int count) {
     const holeRadius = 0.8;
-    final holeGeometry = three.CylinderGeometry(holeRadius, holeRadius, 0.2, 32);
+    final holeGeometry = three.CylinderGeometry(
+      holeRadius,
+      holeRadius,
+      0.2,
+      32,
+    );
     final holeMaterial = three.MeshPhongMaterial.fromMap({
       'color': 0x000000,
       'emissive': 0x0066ff,
@@ -229,7 +241,7 @@ class _PinballSceneController {
       threeJs.scene.add(holeMesh);
 
       // 番号をテキストで表示するメッシュ（簡易版）
-      final numberGeometry = three.SphereGeometry(0.2, 16, 16);
+      final numberGeometry = three.SphereGeometry(0.2, 16);
       final numberMaterial = three.MeshPhongMaterial.fromMap({
         'color': 0xffffff,
         'emissive': 0x666666,
@@ -352,29 +364,21 @@ class _PinballSceneController {
   void _updateFlippers(double deltaTime) {
     // 左フリッパー
     if (isFlipperLeftActive) {
-      leftFlipperAngle = math.min(
-        leftFlipperAngle + flipperSpeed * deltaTime,
-        maxFlipperAngle,
-      );
+      leftFlipperAngle = (leftFlipperAngle + flipperSpeed * deltaTime)
+          .clamp(0.0, maxFlipperAngle);
     } else {
-      leftFlipperAngle = math.max(
-        leftFlipperAngle - flipperSpeed * deltaTime,
-        0,
-      );
+      leftFlipperAngle = (leftFlipperAngle - flipperSpeed * deltaTime)
+          .clamp(0.0, maxFlipperAngle);
     }
     leftFlipper.rotation.y = leftFlipperAngle;
 
     // 右フリッパー
     if (isFlipperRightActive) {
-      rightFlipperAngle = math.max(
-        rightFlipperAngle - flipperSpeed * deltaTime,
-        -maxFlipperAngle,
-      );
+      rightFlipperAngle = (rightFlipperAngle - flipperSpeed * deltaTime)
+          .clamp(-maxFlipperAngle, 0.0);
     } else {
-      rightFlipperAngle = math.min(
-        rightFlipperAngle + flipperSpeed * deltaTime,
-        0,
-      );
+      rightFlipperAngle = (rightFlipperAngle + flipperSpeed * deltaTime)
+          .clamp(-maxFlipperAngle, 0.0);
     }
     rightFlipper.rotation.y = rightFlipperAngle;
   }
