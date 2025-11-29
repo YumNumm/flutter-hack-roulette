@@ -41,7 +41,7 @@ class AmidaPainter extends CustomPainter {
   void _drawVerticalLines(Canvas canvas, Size size, double columnSpacing) {
     final paint = Paint()
       ..color = Colors.grey.shade600
-      ..strokeWidth = 3.0
+      ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
     for (var i = 0; i < teamCount; i++) {
@@ -76,7 +76,9 @@ class AmidaPainter extends CustomPainter {
   }
 
   void _drawAnimatedPath(Canvas canvas, Size size, double columnSpacing) {
-    if (currentPath == null) return;
+    if (currentPath == null) {
+      return;
+    }
 
     final paint = Paint()
       ..color = Colors.blue.shade600
@@ -139,7 +141,7 @@ class AmidaPainter extends CustomPainter {
       path.points,
       size,
       columnSpacing,
-      1.0,
+      1,
     );
 
     canvas.drawPath(fullPath, paint);
@@ -173,8 +175,7 @@ class AmidaPainter extends CustomPainter {
       final x2 = padding + point2.columnIndex * columnSpacing;
       final y2 = topPadding + point2.yPosition * availableHeight;
 
-      final segmentLength =
-          (Offset(x2, y2) - Offset(x1, y1)).distance;
+      final segmentLength = (Offset(x2, y2) - Offset(x1, y1)).distance;
 
       if (currentLength + segmentLength > targetLength) {
         if (!started) {
@@ -228,8 +229,7 @@ class AmidaPainter extends CustomPainter {
       final x2 = padding + point2.columnIndex * columnSpacing;
       final y2 = topPadding + point2.yPosition * availableHeight;
 
-      final segmentLength =
-          (Offset(x2, y2) - Offset(x1, y1)).distance;
+      final segmentLength = (Offset(x2, y2) - Offset(x1, y1)).distance;
 
       if (currentLength + segmentLength >= targetLength) {
         final remainingLength = targetLength - currentLength;
@@ -260,7 +260,7 @@ class AmidaPainter extends CustomPainter {
     }
 
     final availableHeight = size.height - topPadding - bottomPadding;
-    var totalLength = 0;
+    var totalLength = 0.0;
 
     for (var i = 0; i < points.length - 1; i++) {
       final point1 = points[i];

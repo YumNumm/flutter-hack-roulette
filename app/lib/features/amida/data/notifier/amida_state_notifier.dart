@@ -79,7 +79,6 @@ class AmidaStateNotifier extends _$AmidaStateNotifier {
       AmidaState(
         ladder: ladder,
         result: result,
-        presentationState: PresentationState.initial,
         paths: paths,
       ),
     );

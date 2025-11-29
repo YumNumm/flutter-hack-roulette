@@ -44,7 +44,7 @@ class TeamManagementPage extends HookConsumerWidget {
                   ),
                 );
 
-                if (confirmed == true) {
+                if (confirmed ?? false) {
                   await ref
                       .read(amidaStateProvider.notifier)
                       .reset();

@@ -14,4 +14,3 @@ abstract class AmidaResult with _$AmidaResult {
   factory AmidaResult.fromJson(Map<String, dynamic> json) =>
       _$AmidaResultFromJson(json);
 }
-

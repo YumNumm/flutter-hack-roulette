@@ -18,4 +18,3 @@ abstract class PathPoint with _$PathPoint {
     required double yPosition,
   }) = _PathPoint;
 }
-

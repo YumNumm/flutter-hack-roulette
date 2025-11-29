@@ -46,7 +46,7 @@ class AmidaPage extends HookConsumerWidget {
                 ),
               );
 
-              if (confirmed == true) {
+              if (confirmed ?? false) {
                 await ref.read(amidaStateProvider.notifier).reset();
                 if (context.mounted) {
                   Navigator.pop(context);
@@ -266,13 +266,12 @@ class _BottomPanel extends HookConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               HologramCard(
-                color: Colors.cyan,
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
                       HologramText(
-                        text: '第${order}番目',
+                        text: '第$order番目',
                         style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,

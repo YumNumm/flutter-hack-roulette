@@ -20,17 +20,41 @@ class AmidaGenerator {
     final random = seed != null ? Random(seed) : Random();
     final horizontalLines = <HorizontalLine>[];
 
+    // 各高さのレベルで横線を配置
     for (var i = 0; i < horizontalLineCount; i++) {
       final yPosition = (i + 1) / (horizontalLineCount + 1);
 
-      final leftIndex = random.nextInt(teamCount - 1);
-      horizontalLines.add(
-        HorizontalLine(
-          leftIndex: leftIndex,
-          rightIndex: leftIndex + 1,
-          yPosition: yPosition,
-        ),
-      );
+      // この高さで使用可能な列を追跡（連続しないようにする）
+      final availableColumns = <int>[];
+      for (var col = 0; col < teamCount - 1; col++) {
+        availableColumns.add(col);
+      }
+
+      // この高さに1本以上の横線を配置（ランダムに決定）
+      // 最大で (teamCount - 1) / 2 本まで配置可能
+      final maxLines = (teamCount - 1) ~/ 2;
+      final lineCount = random.nextInt(maxLines) + 1;
+
+      for (var j = 0; j < lineCount && availableColumns.isNotEmpty; j++) {
+        final selectedIndex =
+            availableColumns[random.nextInt(availableColumns.length)];
+
+        horizontalLines.add(
+          HorizontalLine(
+            leftIndex: selectedIndex,
+            rightIndex: selectedIndex + 1,
+            yPosition: yPosition,
+          ),
+        );
+
+        // この列と隣接する列を使用不可にする
+        availableColumns.removeWhere(
+          (col) =>
+              col == selectedIndex ||
+              col == selectedIndex - 1 ||
+              col == selectedIndex + 1,
+        );
+      }
     }
 
     return AmidaLadder(

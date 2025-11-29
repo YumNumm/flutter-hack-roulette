@@ -27,7 +27,7 @@ class HologramCard extends HookWidget {
     final animation = useAnimation(animationController);
 
     if (!programFuture.hasData) {
-      return Container(
+      return DecoratedBox(
         decoration: BoxDecoration(
           border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
           borderRadius: BorderRadius.circular(12),

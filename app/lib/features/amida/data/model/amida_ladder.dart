@@ -25,4 +25,3 @@ abstract class HorizontalLine with _$HorizontalLine {
   factory HorizontalLine.fromJson(Map<String, dynamic> json) =>
       _$HorizontalLineFromJson(json);
 }
-
