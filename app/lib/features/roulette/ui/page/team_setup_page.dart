@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:template/core/router/routes/main.dart';
 import 'package:template/features/roulette/data/repository/team_repository.dart';
 import 'package:template/features/roulette/ui/components/team_list.dart';
 
@@ -66,9 +66,9 @@ class TeamSetupPage extends HookConsumerWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: teams.length >= 2
-                    ? () {
+                    ? () async {
                         teamRepository.resetOrders();
-                        context.push('/roulette');
+                        await const RouletteRoute().push<void>(context);
                       }
                     : null,
                 style: ElevatedButton.styleFrom(

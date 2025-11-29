@@ -65,7 +65,7 @@ class RoulettePage extends ConsumerWidget {
               child: Center(
                 child: TweenAnimationBuilder<double>(
                   duration: const Duration(milliseconds: 500),
-                  tween: Tween(begin: 0.0, end: 1.0),
+                  tween: Tween(begin: 0, end: 1),
                   curve: Curves.elasticOut,
                   builder: (context, value, child) {
                     return Transform.scale(

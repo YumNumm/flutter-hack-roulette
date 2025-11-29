@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,8 +28,8 @@ class RouletteScene extends HookConsumerWidget {
       ),
     );
 
-    final rouletteNode = useMemoized(Node.new);
     final dashNode = useState<Node?>(null);
+    final isSceneReady = useState(false);
 
     final ticker = useSingleTickerProvider();
     final controller = useAnimationController(
@@ -40,9 +42,13 @@ class RouletteScene extends HookConsumerWidget {
 
     useEffect(
       () {
-        _setupScene(scene, rouletteNode, teams);
-        _loadDashModel(scene, dashNode);
-        controller.repeat();
+        unawaited(
+          Scene.initializeStaticResources().then((_) async {
+            isSceneReady.value = true;
+            await _loadDashModel(scene, dashNode);
+          }),
+        );
+        unawaited(controller.repeat());
         return null;
       },
       [],
@@ -63,13 +69,12 @@ class RouletteScene extends HookConsumerWidget {
 
     useEffect(
       () {
-        rouletteNode.localTransform = vm.Matrix4.identity()
-          ..rotateY(rouletteState.rotation);
         if (dashNode.value != null) {
-          dashNode.value!.localTransform = vm.Matrix4.identity()
+          final transform = vm.Matrix4.identity()
             ..translate(vm.Vector3(0, 1, 0))
             ..rotateY(rouletteState.rotation)
             ..scale(vm.Vector3.all(0.5));
+          dashNode.value!.globalTransform = transform;
         }
         return null;
       },
@@ -79,43 +84,48 @@ class RouletteScene extends HookConsumerWidget {
     return Stack(
       children: [
         // 2Dルーレット円盤を背景に描画
-        CustomPaint(
-          painter: _RouletteDiskPainter(
-            teams: teams,
-            rotation: rouletteState.rotation,
+        SizedBox.expand(
+          child: CustomPaint(
+            painter: _RouletteDiskPainter(
+              teams: teams,
+              rotation: rouletteState.rotation,
+            ),
           ),
-          size: Size.infinite,
         ),
         // 3D Dashくんを前景に描画
-        CustomPaint(
-          painter: _ScenePainter(
-            scene: scene,
-            camera: camera,
+        if (dashNode.value != null)
+          SizedBox.expand(
+            child: CustomPaint(
+              painter: _ScenePainter(
+                scene: scene,
+                camera: camera,
+              ),
+            ),
           ),
-          size: Size.infinite,
-        ),
       ],
     );
-  }
-
-  void _setupScene(Scene scene, Node rouletteNode, List<Team> teams) {
-    scene.add(rouletteNode);
   }
 
   Future<void> _loadDashModel(
     Scene scene,
     ValueNotifier<Node?> dashNode,
   ) async {
-    try {
+      // まずファイルが存在するか確認
+      final data = await rootBundle.load('assets/models/dash.glb');
+      debugPrint('GLB file loaded: ${data.lengthInBytes} bytes');
+
+      // Node.fromAssetを使ってモデルを読み込む
       final node = await Node.fromAsset('assets/models/dash.glb');
-      node.localTransform = vm.Matrix4.identity()
+
+      // 初期transformを設定
+      final transform = vm.Matrix4.identity()
         ..translate(vm.Vector3(0, 1, 0))
         ..scale(vm.Vector3.all(0.5));
+      node.globalTransform = transform;
       scene.add(node);
       dashNode.value = node;
-    } catch (e) {
-      debugPrint('Failed to load dash model: $e');
-    }
+      debugPrint('✅ Dash model loaded successfully');
+
   }
 }
 
@@ -232,9 +242,9 @@ class _ScenePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    scene.render(camera, canvas);
+    scene.render(camera, canvas, viewport: Offset.zero & size);
   }
 
   @override
-  bool shouldRepaint(_ScenePainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
