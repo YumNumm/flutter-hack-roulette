@@ -51,7 +51,7 @@ final class SharedPreferencesInternalProvider
 }
 
 String _$sharedPreferencesInternalHash() =>
-    r'646ccee97c87d1b33d3c4b364417011bbf96df19';
+    r'85c36609e9ee78eacac8ff299d7948a2602814fc';
 
 @ProviderFor(sharedPreferences)
 const sharedPreferencesProvider = SharedPreferencesProvider._();
@@ -98,4 +98,4 @@ final class SharedPreferencesProvider
   }
 }
 
-String _$sharedPreferencesHash() => r'125d135cdd6ff68e699cf243ca64497c82f4c189';
+String _$sharedPreferencesHash() => r'aac5a03ac5cd10e33a71feb3814a4b763bb27714';
