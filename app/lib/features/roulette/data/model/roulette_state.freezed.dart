@@ -14,7 +14,12 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RouletteState {
 
- RouletteStatus get status; double get rotation; double get rotationVelocity; int? get selectedTeamIndex;
+ RouletteStatus get status;// Dashくんの2D位置（円の内部の座標、正規化: -1〜1の範囲）
+ Offset get dashPosition;// Dashくんの2D速度ベクトル
+ Offset get dashVelocity;// Dashくんの向き（Y軸回転、ラジアン）- 移動方向を向く
+ double get dashHeading;// Dashくんの転がり回転角度（X軸回転、ラジアン）- 移動距離に応じて累積
+ double get dashRollAngle;// 選択されたチームのインデックス
+ int? get selectedTeamIndex;
 /// Create a copy of RouletteState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +30,16 @@ $RouletteStateCopyWith<RouletteState> get copyWith => _$RouletteStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RouletteState&&(identical(other.status, status) || other.status == status)&&(identical(other.rotation, rotation) || other.rotation == rotation)&&(identical(other.rotationVelocity, rotationVelocity) || other.rotationVelocity == rotationVelocity)&&(identical(other.selectedTeamIndex, selectedTeamIndex) || other.selectedTeamIndex == selectedTeamIndex));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RouletteState&&(identical(other.status, status) || other.status == status)&&(identical(other.dashPosition, dashPosition) || other.dashPosition == dashPosition)&&(identical(other.dashVelocity, dashVelocity) || other.dashVelocity == dashVelocity)&&(identical(other.dashHeading, dashHeading) || other.dashHeading == dashHeading)&&(identical(other.dashRollAngle, dashRollAngle) || other.dashRollAngle == dashRollAngle)&&(identical(other.selectedTeamIndex, selectedTeamIndex) || other.selectedTeamIndex == selectedTeamIndex));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,rotation,rotationVelocity,selectedTeamIndex);
+int get hashCode => Object.hash(runtimeType,status,dashPosition,dashVelocity,dashHeading,dashRollAngle,selectedTeamIndex);
 
 @override
 String toString() {
-  return 'RouletteState(status: $status, rotation: $rotation, rotationVelocity: $rotationVelocity, selectedTeamIndex: $selectedTeamIndex)';
+  return 'RouletteState(status: $status, dashPosition: $dashPosition, dashVelocity: $dashVelocity, dashHeading: $dashHeading, dashRollAngle: $dashRollAngle, selectedTeamIndex: $selectedTeamIndex)';
 }
 
 
@@ -45,7 +50,7 @@ abstract mixin class $RouletteStateCopyWith<$Res>  {
   factory $RouletteStateCopyWith(RouletteState value, $Res Function(RouletteState) _then) = _$RouletteStateCopyWithImpl;
 @useResult
 $Res call({
- RouletteStatus status, double rotation, double rotationVelocity, int? selectedTeamIndex
+ RouletteStatus status, Offset dashPosition, Offset dashVelocity, double dashHeading, double dashRollAngle, int? selectedTeamIndex
 });
 
 
@@ -62,11 +67,13 @@ class _$RouletteStateCopyWithImpl<$Res>
 
 /// Create a copy of RouletteState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? rotation = null,Object? rotationVelocity = null,Object? selectedTeamIndex = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? dashPosition = null,Object? dashVelocity = null,Object? dashHeading = null,Object? dashRollAngle = null,Object? selectedTeamIndex = freezed,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as RouletteStatus,rotation: null == rotation ? _self.rotation : rotation // ignore: cast_nullable_to_non_nullable
-as double,rotationVelocity: null == rotationVelocity ? _self.rotationVelocity : rotationVelocity // ignore: cast_nullable_to_non_nullable
+as RouletteStatus,dashPosition: null == dashPosition ? _self.dashPosition : dashPosition // ignore: cast_nullable_to_non_nullable
+as Offset,dashVelocity: null == dashVelocity ? _self.dashVelocity : dashVelocity // ignore: cast_nullable_to_non_nullable
+as Offset,dashHeading: null == dashHeading ? _self.dashHeading : dashHeading // ignore: cast_nullable_to_non_nullable
+as double,dashRollAngle: null == dashRollAngle ? _self.dashRollAngle : dashRollAngle // ignore: cast_nullable_to_non_nullable
 as double,selectedTeamIndex: freezed == selectedTeamIndex ? _self.selectedTeamIndex : selectedTeamIndex // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
@@ -153,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( RouletteStatus status,  double rotation,  double rotationVelocity,  int? selectedTeamIndex)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( RouletteStatus status,  Offset dashPosition,  Offset dashVelocity,  double dashHeading,  double dashRollAngle,  int? selectedTeamIndex)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RouletteState() when $default != null:
-return $default(_that.status,_that.rotation,_that.rotationVelocity,_that.selectedTeamIndex);case _:
+return $default(_that.status,_that.dashPosition,_that.dashVelocity,_that.dashHeading,_that.dashRollAngle,_that.selectedTeamIndex);case _:
   return orElse();
 
 }
@@ -174,10 +181,10 @@ return $default(_that.status,_that.rotation,_that.rotationVelocity,_that.selecte
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( RouletteStatus status,  double rotation,  double rotationVelocity,  int? selectedTeamIndex)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( RouletteStatus status,  Offset dashPosition,  Offset dashVelocity,  double dashHeading,  double dashRollAngle,  int? selectedTeamIndex)  $default,) {final _that = this;
 switch (_that) {
 case _RouletteState():
-return $default(_that.status,_that.rotation,_that.rotationVelocity,_that.selectedTeamIndex);case _:
+return $default(_that.status,_that.dashPosition,_that.dashVelocity,_that.dashHeading,_that.dashRollAngle,_that.selectedTeamIndex);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +201,10 @@ return $default(_that.status,_that.rotation,_that.rotationVelocity,_that.selecte
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( RouletteStatus status,  double rotation,  double rotationVelocity,  int? selectedTeamIndex)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( RouletteStatus status,  Offset dashPosition,  Offset dashVelocity,  double dashHeading,  double dashRollAngle,  int? selectedTeamIndex)?  $default,) {final _that = this;
 switch (_that) {
 case _RouletteState() when $default != null:
-return $default(_that.status,_that.rotation,_that.rotationVelocity,_that.selectedTeamIndex);case _:
+return $default(_that.status,_that.dashPosition,_that.dashVelocity,_that.dashHeading,_that.dashRollAngle,_that.selectedTeamIndex);case _:
   return null;
 
 }
@@ -209,12 +216,19 @@ return $default(_that.status,_that.rotation,_that.rotationVelocity,_that.selecte
 
 
 class _RouletteState implements RouletteState {
-  const _RouletteState({this.status = RouletteStatus.idle, this.rotation = 0.0, this.rotationVelocity = 0.0, this.selectedTeamIndex});
+  const _RouletteState({this.status = RouletteStatus.idle, this.dashPosition = Offset.zero, this.dashVelocity = Offset.zero, this.dashHeading = 0.0, this.dashRollAngle = 0.0, this.selectedTeamIndex});
   
 
 @override@JsonKey() final  RouletteStatus status;
-@override@JsonKey() final  double rotation;
-@override@JsonKey() final  double rotationVelocity;
+// Dashくんの2D位置（円の内部の座標、正規化: -1〜1の範囲）
+@override@JsonKey() final  Offset dashPosition;
+// Dashくんの2D速度ベクトル
+@override@JsonKey() final  Offset dashVelocity;
+// Dashくんの向き（Y軸回転、ラジアン）- 移動方向を向く
+@override@JsonKey() final  double dashHeading;
+// Dashくんの転がり回転角度（X軸回転、ラジアン）- 移動距離に応じて累積
+@override@JsonKey() final  double dashRollAngle;
+// 選択されたチームのインデックス
 @override final  int? selectedTeamIndex;
 
 /// Create a copy of RouletteState
@@ -227,16 +241,16 @@ _$RouletteStateCopyWith<_RouletteState> get copyWith => __$RouletteStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RouletteState&&(identical(other.status, status) || other.status == status)&&(identical(other.rotation, rotation) || other.rotation == rotation)&&(identical(other.rotationVelocity, rotationVelocity) || other.rotationVelocity == rotationVelocity)&&(identical(other.selectedTeamIndex, selectedTeamIndex) || other.selectedTeamIndex == selectedTeamIndex));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RouletteState&&(identical(other.status, status) || other.status == status)&&(identical(other.dashPosition, dashPosition) || other.dashPosition == dashPosition)&&(identical(other.dashVelocity, dashVelocity) || other.dashVelocity == dashVelocity)&&(identical(other.dashHeading, dashHeading) || other.dashHeading == dashHeading)&&(identical(other.dashRollAngle, dashRollAngle) || other.dashRollAngle == dashRollAngle)&&(identical(other.selectedTeamIndex, selectedTeamIndex) || other.selectedTeamIndex == selectedTeamIndex));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,rotation,rotationVelocity,selectedTeamIndex);
+int get hashCode => Object.hash(runtimeType,status,dashPosition,dashVelocity,dashHeading,dashRollAngle,selectedTeamIndex);
 
 @override
 String toString() {
-  return 'RouletteState(status: $status, rotation: $rotation, rotationVelocity: $rotationVelocity, selectedTeamIndex: $selectedTeamIndex)';
+  return 'RouletteState(status: $status, dashPosition: $dashPosition, dashVelocity: $dashVelocity, dashHeading: $dashHeading, dashRollAngle: $dashRollAngle, selectedTeamIndex: $selectedTeamIndex)';
 }
 
 
@@ -247,7 +261,7 @@ abstract mixin class _$RouletteStateCopyWith<$Res> implements $RouletteStateCopy
   factory _$RouletteStateCopyWith(_RouletteState value, $Res Function(_RouletteState) _then) = __$RouletteStateCopyWithImpl;
 @override @useResult
 $Res call({
- RouletteStatus status, double rotation, double rotationVelocity, int? selectedTeamIndex
+ RouletteStatus status, Offset dashPosition, Offset dashVelocity, double dashHeading, double dashRollAngle, int? selectedTeamIndex
 });
 
 
@@ -264,11 +278,13 @@ class __$RouletteStateCopyWithImpl<$Res>
 
 /// Create a copy of RouletteState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? rotation = null,Object? rotationVelocity = null,Object? selectedTeamIndex = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? dashPosition = null,Object? dashVelocity = null,Object? dashHeading = null,Object? dashRollAngle = null,Object? selectedTeamIndex = freezed,}) {
   return _then(_RouletteState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as RouletteStatus,rotation: null == rotation ? _self.rotation : rotation // ignore: cast_nullable_to_non_nullable
-as double,rotationVelocity: null == rotationVelocity ? _self.rotationVelocity : rotationVelocity // ignore: cast_nullable_to_non_nullable
+as RouletteStatus,dashPosition: null == dashPosition ? _self.dashPosition : dashPosition // ignore: cast_nullable_to_non_nullable
+as Offset,dashVelocity: null == dashVelocity ? _self.dashVelocity : dashVelocity // ignore: cast_nullable_to_non_nullable
+as Offset,dashHeading: null == dashHeading ? _self.dashHeading : dashHeading // ignore: cast_nullable_to_non_nullable
+as double,dashRollAngle: null == dashRollAngle ? _self.dashRollAngle : dashRollAngle // ignore: cast_nullable_to_non_nullable
 as double,selectedTeamIndex: freezed == selectedTeamIndex ? _self.selectedTeamIndex : selectedTeamIndex // ignore: cast_nullable_to_non_nullable
 as int?,
   ));

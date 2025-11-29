@@ -2,12 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:template/features/roulette/data/dash/kinematic_dash.dart';
 import 'package:template/features/roulette/data/model/team.dart';
-import 'package:template/features/roulette/data/notifier/roulette_notifier.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 class RouletteScene extends HookConsumerWidget {
@@ -28,7 +27,7 @@ class RouletteScene extends HookConsumerWidget {
       ),
     );
 
-    final dashNode = useState<Node?>(null);
+    final kinematicDash = useState<KinematicDash?>(null);
     final isSceneReady = useState(false);
 
     final ticker = useSingleTickerProvider();
@@ -37,15 +36,12 @@ class RouletteScene extends HookConsumerWidget {
       vsync: ticker,
     );
 
-    final rouletteState = ref.watch(rouletteProvider);
-    final rouletteNotifier = ref.read(rouletteProvider.notifier);
-
     useEffect(
       () {
         unawaited(
           Scene.initializeStaticResources().then((_) async {
             isSceneReady.value = true;
-            await _loadDashModel(scene, dashNode);
+            await _loadDashModel(scene, kinematicDash);
           }),
         );
         unawaited(controller.repeat());
@@ -58,97 +54,129 @@ class RouletteScene extends HookConsumerWidget {
       () {
         void update() {
           const deltaTime = 1.0 / 60.0;
-          rouletteNotifier.updateRotation(deltaTime);
+          // KinematicDashのアニメーションと位置を更新
+          kinematicDash.value?.update(deltaTime);
         }
 
         controller.addListener(update);
         return () => controller.removeListener(update);
       },
-      [controller],
+      [controller, teams.length, kinematicDash.value],
     );
 
-    useEffect(
-      () {
-        if (dashNode.value != null) {
-          final transform = vm.Matrix4.identity()
-            ..translate(vm.Vector3(0, 1, 0))
-            ..rotateY(rouletteState.rotation)
-            ..scale(vm.Vector3.all(0.5));
-          dashNode.value!.globalTransform = transform;
+    final panStartOffset = useRef<Offset?>(null);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onPanStart: (details) => panStartOffset.value = details.localPosition,
+      onPanEnd: (details) {
+        final dash = kinematicDash.value;
+        if (dash == null || dash.isRunning) {
+          return;
         }
-        return null;
-      },
-      [rouletteState.rotation],
-    );
+        if (panStartOffset.value == null) {
+          return;
+        }
+        final startOffset = panStartOffset.value!;
+        final endOffset = details.localPosition;
+        final diff = endOffset - startOffset;
 
-    return Stack(
-      children: [
-        // 2Dルーレット円盤を背景に描画
-        SizedBox.expand(
-          child: CustomPaint(
-            painter: _RouletteDiskPainter(
-              teams: teams,
-              rotation: rouletteState.rotation,
-            ),
-          ),
-        ),
-        // 3D Dashくんを前景に描画
-        if (dashNode.value != null)
+        // 最小速度を設定
+        const minVelocity = 0.5;
+        if (diff.distance < minVelocity) {
+          debugPrint('⚠️ Flick too slow: ${diff.distance}');
+          return;
+        }
+
+        debugPrint(
+          '🎯 Flick detected: velocity=$diff, '
+          'length=${diff.distance}',
+        );
+        dash.start(vm.Vector2(-diff.dx, diff.dy) / 100);
+      },
+      child: Stack(
+        children: [
+          // 2Dルーレット円盤を背景に描画（固定）
           SizedBox.expand(
             child: CustomPaint(
-              painter: _ScenePainter(
-                scene: scene,
-                camera: camera,
+              painter: _RouletteDiskPainter(
+                teams: teams,
               ),
             ),
           ),
-      ],
+          // 3D Dashくんを前景に描画
+          if (kinematicDash.value != null)
+            SizedBox.expand(
+              child: CustomPaint(
+                painter: _ScenePainter(
+                  scene: scene,
+                  camera: camera,
+                  repaint: controller,
+                ),
+              ),
+            ),
+          // フリック案内表示（ルーレット未開始時のみ）
+          if (kinematicDash.value != null && !kinematicDash.value!.isRunning)
+            const Positioned(
+              bottom: 100,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  '画面をフリックしてルーレットを開始',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Future<void> _loadDashModel(
     Scene scene,
-    ValueNotifier<Node?> dashNode,
+    ValueNotifier<KinematicDash?> kinematicDash,
   ) async {
-      // まずファイルが存在するか確認
-      final data = await rootBundle.load('assets/models/dash.glb');
-      debugPrint('GLB file loaded: ${data.lengthInBytes} bytes');
+    final node = await Node.fromAsset('assets/models/dash.glb');
+    scene.add(node);
 
-      // Node.fromAssetを使ってモデルを読み込む
-      final node = await Node.fromAsset('assets/models/dash.glb');
-
-      // 初期transformを設定
-      final transform = vm.Matrix4.identity()
-        ..translate(vm.Vector3(0, 1, 0))
-        ..scale(vm.Vector3.all(0.5));
-      node.globalTransform = transform;
-      scene.add(node);
-      dashNode.value = node;
-      debugPrint('✅ Dash model loaded successfully');
-
+    final dash = KinematicDash(node);
+    dash.updateNode();
+    kinematicDash.value = dash;
+    debugPrint('✅ Dash model loaded successfully');
   }
 }
 
 class _RouletteDiskPainter extends CustomPainter {
   _RouletteDiskPainter({
     required this.teams,
-    required this.rotation,
   });
 
   final List<Team> teams;
-  final double rotation;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (teams.isEmpty) return;
+    if (teams.isEmpty) {
+      return;
+    }
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.shortestSide * 0.35;
+    final radius = size.shortestSide * 0.5;
 
     final segmentAngle = (2 * pi) / teams.length;
 
+    // ルーレット円盤を固定（回転なし）
     for (var i = 0; i < teams.length; i++) {
-      final startAngle = i * segmentAngle + rotation - pi / 2;
+      final startAngle = i * segmentAngle - pi / 2;
       final paint = Paint()
         ..color = _getSegmentColor(i)
         ..style = PaintingStyle.fill;
@@ -228,14 +256,15 @@ class _RouletteDiskPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RouletteDiskPainter oldDelegate) =>
-      oldDelegate.rotation != rotation || oldDelegate.teams != teams;
+      oldDelegate.teams != teams;
 }
 
 class _ScenePainter extends CustomPainter {
   _ScenePainter({
     required this.scene,
     required this.camera,
-  });
+    required Listenable repaint,
+  }) : super(repaint: repaint);
 
   final Scene scene;
   final Camera camera;
