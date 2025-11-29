@@ -148,4 +148,3 @@ class AmidaStateNotifier extends _$AmidaStateNotifier {
     state = const AsyncValue.data(AmidaState());
   }
 }
-

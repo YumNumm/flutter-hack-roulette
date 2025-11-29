@@ -54,21 +54,20 @@ float snoise(vec2 v) {
 
 void main() {
     vec2 uv = FlutterFragCoord().xy / uSize;
-    
+
     // ノイズベースの動的グラデーション
     float noise1 = snoise(uv * 3.0 + vec2(uTime * 0.1, 0.0));
     float noise2 = snoise(uv * 5.0 - vec2(0.0, uTime * 0.15));
-    
+
     // グラデーションの計算
     float gradient = uv.y + noise1 * 0.2 + noise2 * 0.1;
-    
+
     // 色のブレンド
     vec3 color = mix(uColor1, uColor2, gradient);
-    
+
     // 輝度の変化
     float brightness = 0.9 + sin(uTime * 0.5) * 0.1;
     color *= brightness;
-    
+
     fragColor = vec4(color, 1.0);
 }
-

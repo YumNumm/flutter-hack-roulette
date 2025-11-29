@@ -69,4 +69,3 @@ class _ShaderBackgroundPainter extends CustomPainter {
     return oldDelegate.time != time;
   }
 }
-

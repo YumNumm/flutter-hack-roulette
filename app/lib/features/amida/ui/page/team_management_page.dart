@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:roulette/features/amida/data/model/team.dart';
 import 'package:roulette/features/amida/data/notifier/amida_state_notifier.dart';
 import 'package:roulette/features/amida/data/notifier/team_notifier.dart';
+import 'package:roulette/features/amida/ui/components/shader_background.dart';
 
 class TeamManagementPage extends HookConsumerWidget {
   const TeamManagementPage({super.key});
@@ -14,9 +15,12 @@ class TeamManagementPage extends HookConsumerWidget {
     final teamsAsync = ref.watch(teamProvider);
     final amidaStateAsync = ref.watch(amidaStateProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ハッカソン登壇順決定'),
+    return ShaderBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.black.withValues(alpha: 0.3),
+          title: const Text('ハッカソン登壇順決定'),
         actions: [
           if (amidaStateAsync.hasValue &&
               (amidaStateAsync.value?.hasLadder ?? false))
@@ -59,6 +63,7 @@ class TeamManagementPage extends HookConsumerWidget {
         onPressed: () => _showAddTeamDialog(context, ref),
         child: const Icon(Icons.add),
       ),
+    ),
     );
   }
 

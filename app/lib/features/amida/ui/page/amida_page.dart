@@ -6,6 +6,9 @@ import 'package:roulette/features/amida/data/model/team.dart';
 import 'package:roulette/features/amida/data/notifier/amida_state_notifier.dart';
 import 'package:roulette/features/amida/data/notifier/team_notifier.dart';
 import 'package:roulette/features/amida/ui/components/amida_painter.dart';
+import 'package:roulette/features/amida/ui/components/hologram_card.dart';
+import 'package:roulette/features/amida/ui/components/hologram_text.dart';
+import 'package:roulette/features/amida/ui/components/shader_background.dart';
 
 class AmidaPage extends HookConsumerWidget {
   const AmidaPage({super.key});
@@ -15,9 +18,12 @@ class AmidaPage extends HookConsumerWidget {
     final amidaStateAsync = ref.watch(amidaStateProvider);
     final teamsAsync = ref.watch(teamProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('あみだくじ'),
+    return ShaderBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.black.withValues(alpha: 0.3),
+          title: const Text('あみだくじ'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -70,6 +76,7 @@ class AmidaPage extends HookConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('エラー: $error')),
       ),
+    ),
     );
   }
 }
@@ -132,7 +139,7 @@ class _AmidaView extends HookConsumerWidget {
               }
             },
             child: ColoredBox(
-              color: Colors.white,
+              color: Colors.black.withValues(alpha: 0.1),
               child: CustomPaint(
                 painter: AmidaPainter(
                   ladder: amidaState.ladder!,
@@ -245,24 +252,42 @@ class _BottomPanel extends HookConsumerWidget {
       if (animationProgress >= 1) {
         return Container(
           padding: const EdgeInsets.all(24),
-          color: Colors.blue.shade50,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blue.shade900.withValues(alpha: 0.3),
+                Colors.purple.shade900.withValues(alpha: 0.3),
+              ],
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                '第${order}番目',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                team.name,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              HologramCard(
+                color: Colors.cyan,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      HologramText(
+                        text: '第${order}番目',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      HologramText(
+                        text: team.name,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -300,7 +325,16 @@ class _BottomPanel extends HookConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.all(24),
-      color: Colors.green.shade50,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.green.shade900.withValues(alpha: 0.3),
+            Colors.teal.shade900.withValues(alpha: 0.3),
+          ],
+        ),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -310,9 +344,9 @@ class _BottomPanel extends HookConsumerWidget {
             color: Colors.green,
           ),
           const SizedBox(height: 8),
-          const Text(
-            '発表完了！',
-            style: TextStyle(
+          HologramText(
+            text: '発表完了！',
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
