@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
@@ -64,11 +63,12 @@ class PinballGame extends Forge2DGame {
   final void Function(int) onHoleDetected;
 
   late Ball ball;
-  late LeftFlipper leftFlipper;
-  late RightFlipper rightFlipper;
+  LeftFlipper? leftFlipper;
+  RightFlipper? rightFlipper;
   final List<Hole> holes = [];
 
   bool isBallLaunched = false;
+  bool _isInitialized = false;
 
   @override
   Future<void> onLoad() async {
@@ -84,6 +84,8 @@ class PinballGame extends Forge2DGame {
     _createFlippers();
     _createHoles(6);
     _createBumpers();
+    
+    _isInitialized = true;
   }
 
   void _createTable() {
@@ -114,10 +116,12 @@ class PinballGame extends Forge2DGame {
   }
 
   void _createFlippers() {
-    leftFlipper = LeftFlipper(position: Vector2(-2, 12));
-    rightFlipper = RightFlipper(position: Vector2(2, 12));
-    world.add(leftFlipper);
-    world.add(rightFlipper);
+    final left = LeftFlipper(position: Vector2(-2, 12));
+    final right = RightFlipper(position: Vector2(2, 12));
+    leftFlipper = left;
+    rightFlipper = right;
+    world.add(left);
+    world.add(right);
   }
 
   void _createHoles(int count) {
@@ -151,7 +155,7 @@ class PinballGame extends Forge2DGame {
   }
 
   void launchBall() {
-    if (!isBallLaunched) {
+    if (!isBallLaunched && _isInitialized) {
       isBallLaunched = true;
       // ボールに初速度を与える
       final random = math.Random();
@@ -163,8 +167,12 @@ class PinballGame extends Forge2DGame {
   }
 
   void setFlipperStates({required bool leftActive, required bool rightActive}) {
-    leftFlipper.isActive = leftActive;
-    rightFlipper.isActive = rightActive;
+    if (!_isInitialized) {
+      return;
+    }
+    
+    leftFlipper?.isActive = leftActive;
+    rightFlipper?.isActive = rightActive;
   }
 }
 
@@ -302,7 +310,9 @@ class LeftFlipper extends BodyComponent {
       ..initialize(anchorBody, flipperBody, _position)
       ..enableLimit = true
       ..lowerAngle = 0
-      ..upperAngle = math.pi / 3 // 60度
+      ..upperAngle =
+          math.pi /
+          3 // 60度
       ..enableMotor = true
       ..maxMotorTorque = 1000;
 
@@ -375,7 +385,9 @@ class RightFlipper extends BodyComponent {
     final jointDef = RevoluteJointDef()
       ..initialize(anchorBody, flipperBody, _position)
       ..enableLimit = true
-      ..lowerAngle = -math.pi / 3 // -60度
+      ..lowerAngle =
+          -math.pi /
+          3 // -60度
       ..upperAngle = 0
       ..enableMotor = true
       ..maxMotorTorque = 1000;
