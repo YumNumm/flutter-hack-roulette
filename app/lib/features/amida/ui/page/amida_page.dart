@@ -344,13 +344,13 @@ class _BottomPanel extends HookConsumerWidget {
             color: Colors.green,
           ),
           const SizedBox(height: 8),
-          HologramText(
-            text: '発表完了！',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+              const HologramText(
+                text: '発表完了！',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
           const SizedBox(height: 16),
           _ResultList(amidaState: amidaState, teams: teams),
         ],

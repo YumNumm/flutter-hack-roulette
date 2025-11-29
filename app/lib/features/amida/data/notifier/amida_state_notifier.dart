@@ -12,7 +12,7 @@ part 'amida_state_notifier.freezed.dart';
 part 'amida_state_notifier.g.dart';
 
 @freezed
-class AmidaState with _$AmidaState {
+abstract class AmidaState with _$AmidaState {
   const factory AmidaState({
     AmidaLadder? ladder,
     AmidaResult? result,

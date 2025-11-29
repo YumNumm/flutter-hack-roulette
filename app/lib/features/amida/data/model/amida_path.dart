@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'amida_path.freezed.dart';
 
 @freezed
-class AmidaPath with _$AmidaPath {
+abstract class AmidaPath with _$AmidaPath {
   const factory AmidaPath({
     required int startIndex,
     required int endIndex,
@@ -12,7 +12,7 @@ class AmidaPath with _$AmidaPath {
 }
 
 @freezed
-class PathPoint with _$PathPoint {
+abstract class PathPoint with _$PathPoint {
   const factory PathPoint({
     required int columnIndex,
     required double yPosition,

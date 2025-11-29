@@ -260,7 +260,7 @@ class AmidaPainter extends CustomPainter {
     }
 
     final availableHeight = size.height - topPadding - bottomPadding;
-    var totalLength = 0.0;
+    var totalLength = 0;
 
     for (var i = 0; i < points.length - 1; i++) {
       final point1 = points[i];

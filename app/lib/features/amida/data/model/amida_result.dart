@@ -4,7 +4,7 @@ part 'amida_result.freezed.dart';
 part 'amida_result.g.dart';
 
 @freezed
-class AmidaResult with _$AmidaResult {
+abstract class AmidaResult with _$AmidaResult {
   const factory AmidaResult({
     required List<String> teamIds,
     required List<int> resultOrder,

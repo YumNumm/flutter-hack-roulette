@@ -38,10 +38,10 @@ class HologramText extends HookWidget {
           ..setFloat(1, bounds.height) // uSize.y
           ..setFloat(2, animation * 10) // uTime
           // uColor (cyan)
-          ..setFloat(3, 0.0)
+          ..setFloat(3, 0)
           ..setFloat(4, 0.8)
-          ..setFloat(5, 1.0)
-          ..setFloat(6, 1.0); // uAlpha
+          ..setFloat(5, 1)
+          ..setFloat(6, 1); // uAlpha
 
         return shader;
       },
@@ -53,4 +53,3 @@ class HologramText extends HookWidget {
     );
   }
 }
-

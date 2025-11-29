@@ -4,7 +4,7 @@ part 'amida_ladder.freezed.dart';
 part 'amida_ladder.g.dart';
 
 @freezed
-class AmidaLadder with _$AmidaLadder {
+abstract class AmidaLadder with _$AmidaLadder {
   const factory AmidaLadder({
     required int teamCount,
     required List<HorizontalLine> horizontalLines,
@@ -15,7 +15,7 @@ class AmidaLadder with _$AmidaLadder {
 }
 
 @freezed
-class HorizontalLine with _$HorizontalLine {
+abstract class HorizontalLine with _$HorizontalLine {
   const factory HorizontalLine({
     required int leftIndex,
     required int rightIndex,

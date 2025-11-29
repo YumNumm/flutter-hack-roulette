@@ -42,13 +42,15 @@ class HologramCard extends HookWidget {
         time: animation,
         color: color,
       ),
-      child: Container(
-        margin: const EdgeInsets.all(2),
+      child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: color.withValues(alpha: 0.05),
         ),
-        child: child,
+        child: Padding(
+          padding: const EdgeInsets.all(2),
+          child: child,
+        ),
       ),
     );
   }
@@ -71,9 +73,9 @@ class _HologramBorderPainter extends CustomPainter {
       ..setFloat(0, size.width) // uSize.x
       ..setFloat(1, size.height) // uSize.y
       ..setFloat(2, time * 10) // uTime
-      ..setFloat(3, color.red / 255.0) // uColor.r
-      ..setFloat(4, color.green / 255.0) // uColor.g
-      ..setFloat(5, color.blue / 255.0) // uColor.b
+      ..setFloat(3, (color.r * 255).round().clamp(0, 255) / 255.0) // uColor.r
+      ..setFloat(4, (color.g * 255).round().clamp(0, 255) / 255.0) // uColor.g
+      ..setFloat(5, (color.b * 255).round().clamp(0, 255) / 255.0) // uColor.b
       ..setFloat(6, 0.8); // uAlpha
 
     final paint = Paint()
@@ -94,4 +96,3 @@ class _HologramBorderPainter extends CustomPainter {
     return oldDelegate.time != time;
   }
 }
-

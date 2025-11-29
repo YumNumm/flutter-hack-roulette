@@ -4,7 +4,7 @@ part 'presentation_state.freezed.dart';
 part 'presentation_state.g.dart';
 
 @freezed
-class PresentationState with _$PresentationState {
+abstract class PresentationState with _$PresentationState {
   const factory PresentationState({
     required int currentIndex,
     required PresentationStatus status,
