@@ -5,7 +5,7 @@ import 'package:roulette/features/amida/data/model/amida_path.dart';
 
 class AmidaGenerator {
   AmidaGenerator({
-    this.horizontalLineCount = 20,
+    this.horizontalLineCount = 30,
     this.seed,
   });
 
@@ -22,7 +22,9 @@ class AmidaGenerator {
 
     // 各高さのレベルで横線を配置
     for (var i = 0; i < horizontalLineCount; i++) {
-      final yPosition = (i + 1) / (horizontalLineCount + 1);
+      // Y位置を完全にランダムにする（重ならないように）
+      final yPosition = (i + 1 + random.nextDouble() * 0.8 - 0.4) /
+          (horizontalLineCount + 1);
 
       // この高さで使用可能な列を追跡（連続しないようにする）
       final availableColumns = <int>[];
@@ -30,30 +32,35 @@ class AmidaGenerator {
         availableColumns.add(col);
       }
 
-      // この高さに1本以上の横線を配置（ランダムに決定）
-      // 最大で (teamCount - 1) / 2 本まで配置可能
-      final maxLines = (teamCount - 1) ~/ 2;
-      final lineCount = random.nextInt(maxLines) + 1;
+      // この高さに横線を配置するかどうかをランダムに決定（70%の確率で配置）
+      if (random.nextDouble() > 0.3) {
+        // 最大で (teamCount - 1) / 2 本まで配置可能
+        final maxLines = (teamCount - 1) ~/ 2;
+        // 配置する線の本数もランダムに（1本が多め）
+        final lineCount = random.nextDouble() < 0.7
+            ? 1
+            : random.nextInt(maxLines.clamp(1, 3)) + 1;
 
-      for (var j = 0; j < lineCount && availableColumns.isNotEmpty; j++) {
-        final selectedIndex =
-            availableColumns[random.nextInt(availableColumns.length)];
+        for (var j = 0; j < lineCount && availableColumns.isNotEmpty; j++) {
+          final selectedIndex =
+              availableColumns[random.nextInt(availableColumns.length)];
 
-        horizontalLines.add(
-          HorizontalLine(
-            leftIndex: selectedIndex,
-            rightIndex: selectedIndex + 1,
-            yPosition: yPosition,
-          ),
-        );
+          horizontalLines.add(
+            HorizontalLine(
+              leftIndex: selectedIndex,
+              rightIndex: selectedIndex + 1,
+              yPosition: yPosition.clamp(0.0, 1.0),
+            ),
+          );
 
-        // この列と隣接する列を使用不可にする
-        availableColumns.removeWhere(
-          (col) =>
-              col == selectedIndex ||
-              col == selectedIndex - 1 ||
-              col == selectedIndex + 1,
-        );
+          // この列と隣接する列を使用不可にする
+          availableColumns.removeWhere(
+            (col) =>
+                col == selectedIndex ||
+                col == selectedIndex - 1 ||
+                col == selectedIndex + 1,
+          );
+        }
       }
     }
 

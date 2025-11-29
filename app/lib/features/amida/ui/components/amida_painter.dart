@@ -40,7 +40,7 @@ class AmidaPainter extends CustomPainter {
 
   void _drawVerticalLines(Canvas canvas, Size size, double columnSpacing) {
     final paint = Paint()
-      ..color = Colors.grey.shade600
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
@@ -56,7 +56,7 @@ class AmidaPainter extends CustomPainter {
 
   void _drawHorizontalLines(Canvas canvas, Size size, double columnSpacing) {
     final paint = Paint()
-      ..color = Colors.grey.shade600
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
@@ -81,17 +81,17 @@ class AmidaPainter extends CustomPainter {
     }
 
     final paint = Paint()
-      ..color = Colors.blue.shade600
-      ..strokeWidth = 5
+      ..color = Colors.cyan.shade400
+      ..strokeWidth = 6
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     final glowPaint = Paint()
-      ..color = Colors.blue.withValues(alpha: 0.3)
-      ..strokeWidth = 12
+      ..color = Colors.cyan.withValues(alpha: 0.6)
+      ..strokeWidth = 14
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
     final path = _createPathFromPoints(
       currentPath!.points,
@@ -112,16 +112,16 @@ class AmidaPainter extends CustomPainter {
 
     if (endPoint != null) {
       final circlePaint = Paint()
-        ..color = Colors.blue.shade600
+        ..color = Colors.cyan.shade300
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(endPoint, 8, circlePaint);
+      canvas.drawCircle(endPoint, 10, circlePaint);
 
       final outerCirclePaint = Paint()
-        ..color = Colors.blue.withValues(alpha: 0.3)
+        ..color = Colors.cyan.withValues(alpha: 0.6)
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(endPoint, 12, outerCirclePaint);
+      canvas.drawCircle(endPoint, 16, outerCirclePaint);
     }
   }
 

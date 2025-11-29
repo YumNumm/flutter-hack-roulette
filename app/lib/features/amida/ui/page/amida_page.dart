@@ -8,6 +8,7 @@ import 'package:roulette/features/amida/data/notifier/team_notifier.dart';
 import 'package:roulette/features/amida/ui/components/amida_painter.dart';
 import 'package:roulette/features/amida/ui/components/hologram_card.dart';
 import 'package:roulette/features/amida/ui/components/hologram_text.dart';
+import 'package:roulette/features/amida/ui/components/result_modal.dart';
 import 'package:roulette/features/amida/ui/components/shader_background.dart';
 
 class AmidaPage extends HookConsumerWidget {
@@ -23,6 +24,7 @@ class AmidaPage extends HookConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.black.withValues(alpha: 0.3),
+          foregroundColor: Colors.white,
           title: const Text('あみだくじ'),
         actions: [
           IconButton(
@@ -98,6 +100,7 @@ class _AmidaView extends HookConsumerWidget {
     final animation = useAnimation(animationController);
 
     final currentTeamIndex = useState<int?>(null);
+    final hasShownModal = useState(false);
 
     useEffect(
       () {
@@ -106,12 +109,53 @@ class _AmidaView extends HookConsumerWidget {
           final index = amidaState.presentationState.currentIndex;
           if (index >= 0 && index < teams.length) {
             currentTeamIndex.value = index;
+            hasShownModal.value = false;
             animationController.forward(from: 0);
           }
         }
         return null;
       },
       [amidaState.presentationState],
+    );
+
+    useEffect(
+      () {
+        if (animation >= 1 &&
+            !hasShownModal.value &&
+            currentTeamIndex.value != null &&
+            amidaState.presentationState.status ==
+                PresentationStatus.presenting) {
+          hasShownModal.value = true;
+
+          final index = currentTeamIndex.value!;
+          final team = teams[index];
+          final path = amidaState.paths![index];
+          final order = path.endIndex + 1;
+          final isLast = index >= teams.length - 1;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              showDialog<void>(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => ResultModal(
+                  teamName: team.name,
+                  order: order,
+                  isLast: isLast,
+                ),
+              ).then((_) async {
+                if (context.mounted) {
+                  await ref
+                      .read(amidaStateProvider.notifier)
+                      .showNextTeam();
+                }
+              });
+            }
+          });
+        }
+        return null;
+      },
+      [animation, hasShownModal.value, currentTeamIndex.value],
     );
 
     final currentPath = currentTeamIndex.value != null &&
@@ -130,16 +174,10 @@ class _AmidaView extends HookConsumerWidget {
                 await ref
                     .read(amidaStateProvider.notifier)
                     .startPresentation();
-              } else if (amidaState.presentationState.status ==
-                      PresentationStatus.presenting &&
-                  animation >= 1) {
-                await ref
-                    .read(amidaStateProvider.notifier)
-                    .showNextTeam();
               }
             },
             child: ColoredBox(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: 0.3),
               child: CustomPaint(
                 painter: AmidaPainter(
                   ladder: amidaState.ladder!,
@@ -149,7 +187,8 @@ class _AmidaView extends HookConsumerWidget {
                 ),
                 child: Stack(
                   children: [
-                    _TeamLabels(teams: teams),
+                    _TopNumbers(teamCount: teams.length),
+                    _BottomTeamNames(teams: teams),
                   ],
                 ),
               ),
@@ -166,10 +205,10 @@ class _AmidaView extends HookConsumerWidget {
   }
 }
 
-class _TeamLabels extends StatelessWidget {
-  const _TeamLabels({required this.teams});
+class _TopNumbers extends StatelessWidget {
+  const _TopNumbers({required this.teamCount});
 
-  final List<Team> teams;
+  final int teamCount;
 
   @override
   Widget build(BuildContext context) {
@@ -178,6 +217,62 @@ class _TeamLabels extends StatelessWidget {
       left: 0,
       right: 0,
       height: AmidaPainter.topPadding,
+      child: Row(
+        children: List.generate(
+          teamCount,
+          (index) {
+            return Expanded(
+              child: Center(
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.2),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.8),
+                            offset: const Offset(1, 1),
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomTeamNames extends StatelessWidget {
+  const _BottomTeamNames({required this.teams});
+
+  final List<Team> teams;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: AmidaPainter.bottomPadding,
       child: Row(
         children: List.generate(
           teams.length,
@@ -189,9 +284,17 @@ class _TeamLabels extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
                     team.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          offset: const Offset(1, 1),
+                          blurRadius: 3,
+                        ),
+                      ],
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
@@ -230,14 +333,35 @@ class _BottomPanel extends HookConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               '画面をタップして発表を開始',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    offset: const Offset(2, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               '${teams.length}チームの登壇順を決定します',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    offset: const Offset(1, 1),
+                    blurRadius: 2,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -246,76 +370,43 @@ class _BottomPanel extends HookConsumerWidget {
 
     if (status == PresentationStatus.presenting) {
       final team = teams[currentIndex];
-      final path = amidaState.paths![currentIndex];
-      final order = path.endIndex + 1;
-
-      if (animationProgress >= 1) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.blue.shade900.withValues(alpha: 0.3),
-                Colors.purple.shade900.withValues(alpha: 0.3),
-              ],
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              HologramCard(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      HologramText(
-                        text: '第$order番目',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      HologramText(
-                        text: team.name,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'タップして次へ',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
-          ),
-        );
-      }
 
       return Container(
         padding: const EdgeInsets.all(24),
-        color: Colors.grey.shade100,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.blue.shade900.withValues(alpha: 0.5),
+              Colors.purple.shade900.withValues(alpha: 0.5),
+            ],
+          ),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               team.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    offset: const Offset(2, 2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: animationProgress,
               minHeight: 8,
+              backgroundColor: Colors.white24,
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.cyan),
             ),
           ],
         ),
@@ -386,24 +477,42 @@ class _ResultList extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
-              children: [
-                SizedBox(
-                  width: 40,
-                  child: Text(
-                    '${index + 1}.',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+            children: [
+              SizedBox(
+                width: 40,
+                child: Text(
+                  '${index + 1}.',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.8),
+                        offset: const Offset(1, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: Text(
-                    team.name,
-                    style: const TextStyle(fontSize: 16),
+              ),
+              Expanded(
+                child: Text(
+                  team.name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.8),
+                        offset: const Offset(1, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
+            ],
             ),
           );
         },

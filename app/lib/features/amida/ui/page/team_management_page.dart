@@ -19,6 +19,7 @@ class TeamManagementPage extends HookConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.black.withValues(alpha: 0.3),
+          foregroundColor: Colors.white,
           title: const Text('ハッカソン登壇順決定'),
         actions: [
           if (amidaStateAsync.hasValue &&
@@ -123,11 +124,21 @@ class _TeamList extends HookConsumerWidget {
         amidaStateAsync.hasValue ? amidaStateAsync.value : null;
 
     if (teams.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'チームを追加してください\n（右下の + ボタンから追加）',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.8),
+                offset: const Offset(2, 2),
+                blurRadius: 4,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -144,13 +155,24 @@ class _TeamList extends HookConsumerWidget {
                   horizontal: 16,
                   vertical: 8,
                 ),
+                color: Colors.black.withValues(alpha: 0.6),
                 child: ListTile(
                   leading: CircleAvatar(
-                    child: Text('${index + 1}'),
+                    backgroundColor: Colors.blue.shade700,
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
-                  title: Text(team.name),
+                  title: Text(
+                    team.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete),
+                    icon: const Icon(Icons.delete, color: Colors.white70),
                     onPressed: () async {
                       await ref
                           .read(teamProvider.notifier)
@@ -199,7 +221,17 @@ class _TeamList extends HookConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   '登録チーム数: ${teams.length}',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black,
+                        offset: Offset(1, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
