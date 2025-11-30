@@ -1,196 +1,249 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_scene/scene.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:template/features/roulette/data/dash/kinematic_dash.dart';
+import 'package:template/features/roulette/data/model/roulette_state.dart';
 import 'package:template/features/roulette/data/model/team.dart';
-import 'package:vector_math/vector_math.dart' as vm;
+
+const _ballRadius = 14.0;
+const _minLaunchVelocity = 350.0;
+const _velocityFallbackScale = 8.0;
 
 class RouletteScene extends HookConsumerWidget {
   const RouletteScene({
     required this.teams,
+    required this.onTeamDecided,
     super.key,
   });
 
   final List<Team> teams;
+  final void Function(Team team) onTeamDecided;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scene = useMemoized(Scene.new);
+    if (teams.isEmpty) {
+      return const Center(
+        child: Text('チームがありません'),
+      );
+    }
 
-    final camera = useMemoized(
-      () => PerspectiveCamera(
-        position: vm.Vector3(0, 10, 10),
-        target: vm.Vector3(0, 0, 0),
-      ),
-    );
+    final simulation = useMemoized(_BallSimulation.new);
+    final ballPosition = useState(Offset.zero);
+    final status = useState(RouletteStatus.idle);
 
-    final kinematicDash = useState<KinematicDash?>(null);
-    final isSceneReady = useState(false);
+    final dragStart = useRef<Offset?>(null);
+    final dragCurrent = useRef<Offset?>(null);
+    final lastElapsed = useRef<Duration?>(null);
+    final hasReportedResult = useRef(false);
 
-    final ticker = useSingleTickerProvider();
-    final controller = useAnimationController(
-      duration: const Duration(hours: 1),
-      vsync: ticker,
+    final teamsRef = useRef<List<Team>>(teams);
+    teamsRef.value = teams;
+
+    final onTeamDecidedRef = useRef(onTeamDecided);
+    onTeamDecidedRef.value = onTeamDecided;
+
+    final tickerProvider = useSingleTickerProvider();
+
+    useEffect(
+      () {
+        final ticker = tickerProvider.createTicker((elapsed) {
+          final previous = lastElapsed.value;
+          lastElapsed.value = elapsed;
+          if (previous == null || simulation.boundaryRadius == 0) {
+            return;
+          }
+          final deltaSeconds =
+              (elapsed - previous).inMicroseconds / Duration.microsecondsPerSecond;
+          if (deltaSeconds <= 0) {
+            return;
+          }
+
+          final wasRunning = simulation.isRunning;
+          simulation.step(deltaSeconds);
+          ballPosition.value = simulation.position;
+
+          if (simulation.isRunning && status.value == RouletteStatus.idle) {
+            status.value = RouletteStatus.spinning;
+          }
+
+          if (wasRunning && !simulation.isRunning) {
+            status.value = RouletteStatus.stopped;
+            if (!hasReportedResult.value && teamsRef.value.isNotEmpty) {
+              hasReportedResult.value = true;
+              final winnerIndex = _RouletteMath.segmentIndexFor(
+                simulation.position,
+                teamsRef.value.length,
+              );
+              onTeamDecidedRef.value(teamsRef.value[winnerIndex]);
+            }
+          }
+        });
+
+        ticker.start();
+        return () {
+          ticker.dispose();
+          lastElapsed.value = null;
+        };
+      },
+      [tickerProvider, simulation],
     );
 
     useEffect(
       () {
-        unawaited(
-          Scene.initializeStaticResources().then((_) async {
-            final node = await Node.fromAsset('build/models/dash.model');
-            scene.add(node);
-
-            final dash = KinematicDash(node);
-            dash.updateNode();
-            kinematicDash.value = dash;
-            debugPrint('✅ Dash model loaded successfully');
-
-            final skySphere = await Node.fromAsset(
-              'build/models/sky_sphere.model',
-            );
-
-            Node convertToUnlit(Node node) {
-              // Search for all mesh primitives and convert them to unlit.
-              if (node.mesh != null) {
-                for (final primitive in node.mesh!.primitives) {
-                  if (primitive.material is PhysicallyBasedMaterial) {
-                    final pbr = primitive.material as PhysicallyBasedMaterial;
-                    primitive.material = UnlitMaterial(
-                      colorTexture: pbr.baseColorTexture,
-                    );
-                  }
-                }
-              }
-              for (final child in node.children) {
-                convertToUnlit(child);
-              }
-
-              return node;
-            }
-
-            final sky = convertToUnlit(skySphere);
-            sky.globalTransform = vm.Matrix4.translation(
-              vm.Vector3(0, 1, 1),
-            );
-            scene.add(sky);
-            isSceneReady.value = true;
-          }),
-        );
-        unawaited(controller.repeat());
+        simulation.reset();
+        ballPosition.value = Offset.zero;
+        status.value = RouletteStatus.idle;
+        dragStart.value = null;
+        dragCurrent.value = null;
+        hasReportedResult.value = false;
         return null;
       },
-      [],
+      [teams],
     );
-
-    useEffect(
-      () {
-        void update() {
-          const deltaTime = 1.0 / 60.0;
-          // KinematicDashのアニメーションと位置を更新
-          kinematicDash.value?.update(deltaTime);
-        }
-
-        controller.addListener(update);
-        return () => controller.removeListener(update);
-      },
-      [controller, teams.length, kinematicDash.value],
-    );
-
-    final panStartOffset = useRef<Offset?>(null);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 画面の短辺/2を基準に境界半径を計算
-        // 3Dワールド座標へのスケール変換（調整可能）
-        const worldScale = 0.01;
-        final screenRadius = constraints.biggest.shortestSide * 0.5;
-        final worldBoundaryRadius = screenRadius * worldScale;
+        final size = constraints.biggest;
+        final radius = size.shortestSide * 0.45;
+        final safeRadius = max(radius - _ballRadius * 1.2, 4);
+        final center = Offset(size.width / 2, size.height / 2);
+        simulation.boundaryRadius = safeRadius;
 
-        // 境界半径を設定
-        kinematicDash.value?.boundaryRadius = worldBoundaryRadius.toInt();
+        int? highlightedIndex;
+        if (teams.isNotEmpty) {
+          highlightedIndex = _RouletteMath.segmentIndexFor(
+            ballPosition.value,
+            teams.length,
+          );
+        }
+
+        Offset clampToCircle(Offset localPosition) {
+          final relative = localPosition - center;
+          final distance = relative.distance;
+          if (distance <= safeRadius) {
+            return relative;
+          }
+          if (distance == 0) {
+            return Offset.zero;
+          }
+          final normalized = relative / distance;
+          return normalized * safeRadius;
+        }
+
+        void updateBallPosition(Offset relative) {
+          simulation.placeBall(relative);
+          ballPosition.value = simulation.position;
+        }
+
+        void startSimulation(Offset velocity) {
+          if (velocity.distance < _minLaunchVelocity) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('もう少し強くスワイプしてください')),
+            );
+            return;
+          }
+          hasReportedResult.value = false;
+          status.value = RouletteStatus.spinning;
+          simulation.start(velocity);
+        }
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onPanStart: (details) => panStartOffset.value = details.localPosition,
+          onPanStart: (details) {
+            if (simulation.isRunning) {
+              return;
+            }
+            dragStart.value = details.localPosition;
+            dragCurrent.value = details.localPosition;
+            updateBallPosition(clampToCircle(details.localPosition));
+          },
+          onPanUpdate: (details) {
+            if (simulation.isRunning) {
+              return;
+            }
+            dragCurrent.value = details.localPosition;
+            updateBallPosition(clampToCircle(details.localPosition));
+          },
+          onPanCancel: () {
+            dragStart.value = null;
+            dragCurrent.value = null;
+          },
           onPanEnd: (details) {
-            final dash = kinematicDash.value;
-            if (dash == null || dash.isRunning) {
+            if (simulation.isRunning || dragStart.value == null) {
               return;
             }
-            if (panStartOffset.value == null) {
-              return;
+            final velocity = details.velocity.pixelsPerSecond;
+            Offset effectiveVelocity = velocity;
+            if (effectiveVelocity.distance < 50 &&
+                dragCurrent.value != null &&
+                dragStart.value != null) {
+              effectiveVelocity =
+                  (dragCurrent.value! - dragStart.value!) * _velocityFallbackScale;
             }
-            final startOffset = panStartOffset.value!;
-            final endOffset = details.localPosition;
-            final diff = endOffset - startOffset;
-
-            // 最小速度を設定
-            const minVelocity = 0.5;
-            if (diff.distance < minVelocity) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Flick too slow'),
-                ),
-              );
-              return;
-            }
-
-            debugPrint(
-              '🎯 Flick detected: velocity=$diff, '
-              'length=${diff.distance}',
-            );
-            dash.start(vm.Vector2(-diff.dx, diff.dy) / 10);
+            startSimulation(effectiveVelocity);
+            dragStart.value = null;
+            dragCurrent.value = null;
           },
           child: Stack(
             children: [
-              Transform(
-                transform: Matrix4.identity()
-                  ..setEntry(3, 3, 0.0001) // perspective
-                  ..rotateX(-pi / 12)
-                  ..rotateY(0),
-                child: SizedBox.expand(
-                  child: CustomPaint(
-                    painter: _RouletteDiskPainter(
-                      teams: teams,
-                    ),
+              SizedBox.expand(
+                child: CustomPaint(
+                  painter: _RoulettePainter(
+                    teams: teams,
+                    center: center,
+                    radius: radius,
+                    ballPosition: ballPosition.value,
+                    ballRadius: _ballRadius,
+                    highlightedIndex: highlightedIndex,
                   ),
                 ),
               ),
-              // 3D Dashくんを前景に描画
-              if (kinematicDash.value != null)
-                SizedBox.expand(
-                  child: CustomPaint(
-                    painter: _ScenePainter(
-                      scene: scene,
-                      camera: camera,
-                      repaint: controller,
-                    ),
-                  ),
-                ),
-              // フリック案内表示（ルーレット未開始時のみ）
-              if (kinematicDash.value != null &&
-                  !kinematicDash.value!.isRunning)
-                const Positioned(
-                  bottom: 100,
+              if (status.value != RouletteStatus.spinning)
+                Positioned(
+                  bottom: 48,
                   left: 0,
                   right: 0,
-                  child: Center(
-                    child: Text(
-                      '画面をフリックしてルーレットを開始',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 4,
-                          ),
-                        ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.swipe,
+                        color: Colors.white.withOpacity(0.9),
+                        size: 32,
                       ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'ボールをドラッグしてスワイプ',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(blurRadius: 6),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (status.value == RouletteStatus.stopped && highlightedIndex != null)
+                Positioned(
+                  top: 24,
+                  left: 0,
+                  right: 0,
+                  child: Text(
+                    '${teams[highlightedIndex].name} が選ばれました',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(blurRadius: 4),
+                      ],
                     ),
                   ),
                 ),
@@ -202,12 +255,35 @@ class RouletteScene extends HookConsumerWidget {
   }
 }
 
-class _RouletteDiskPainter extends CustomPainter {
-  _RouletteDiskPainter({
+class _RoulettePainter extends CustomPainter {
+  _RoulettePainter({
     required this.teams,
+    required this.center,
+    required this.radius,
+    required this.ballPosition,
+    required this.ballRadius,
+    required this.highlightedIndex,
   });
 
   final List<Team> teams;
+  final Offset center;
+  final double radius;
+  final Offset ballPosition;
+  final double ballRadius;
+  final int? highlightedIndex;
+
+  static const _segmentColors = [
+    Color(0xFFE57373),
+    Color(0xFF64B5F6),
+    Color(0xFF81C784),
+    Color(0xFFFFF176),
+    Color(0xFFFFB74D),
+    Color(0xFF9575CD),
+    Color(0xFFF06292),
+    Color(0xFF4DB6AC),
+    Color(0xFF4DD0E1),
+    Color(0xFFFFD54F),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -215,22 +291,21 @@ class _RouletteDiskPainter extends CustomPainter {
       return;
     }
 
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.shortestSide * 0.5;
-
+    final diskRadius = min(radius, size.shortestSide / 2);
     final segmentAngle = (2 * pi) / teams.length;
 
-    // ルーレット円盤を描画
     for (var i = 0; i < teams.length; i++) {
       final startAngle = i * segmentAngle - pi / 2;
+      final isHighlighted = highlightedIndex == i;
       final paint = Paint()
-        ..color = _getSegmentColor(i)
+        ..color = _segmentColors[i % _segmentColors.length]
+            .withOpacity(isHighlighted ? 0.95 : 0.75)
         ..style = PaintingStyle.fill;
 
       final path = Path()
         ..moveTo(center.dx, center.dy)
         ..arcTo(
-          Rect.fromCircle(center: center, radius: radius),
+          Rect.fromCircle(center: center, radius: diskRadius),
           startAngle,
           segmentAngle,
           false,
@@ -239,34 +314,37 @@ class _RouletteDiskPainter extends CustomPainter {
 
       canvas.drawPath(path, paint);
 
-      // セグメントの境界線を描画
       final borderPaint = Paint()
-        ..color = Colors.white
+        ..color = Colors.white.withOpacity(0.8)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
+        ..strokeWidth = isHighlighted ? 4 : 2;
       canvas.drawPath(path, borderPaint);
 
-      // チーム名を描画
       final textAngle = startAngle + segmentAngle / 2;
-      final textRadius = radius * 0.7;
-      final textX = center.dx + cos(textAngle) * textRadius;
-      final textY = center.dy + sin(textAngle) * textRadius;
+      final textRadius = diskRadius * 0.7;
+      final textPosition = Offset(
+        center.dx + cos(textAngle) * textRadius,
+        center.dy + sin(textAngle) * textRadius,
+      );
 
       final textPainter = TextPainter(
         text: TextSpan(
           text: teams[i].name,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: isHighlighted ? 20 : 16,
             fontWeight: FontWeight.bold,
+            shadows: const [
+              Shadow(blurRadius: 2),
+            ],
           ),
         ),
         textDirection: TextDirection.ltr,
-      )..layout();
+      )..layout(maxWidth: diskRadius * 0.5);
 
       canvas
         ..save()
-        ..translate(textX, textY)
+        ..translate(textPosition.dx, textPosition.dy)
         ..rotate(textAngle + pi / 2);
 
       textPainter.paint(
@@ -277,49 +355,132 @@ class _RouletteDiskPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // 中央の円を描画
-    final centerCirclePaint = Paint()
+    final hubPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, radius * 0.15, centerCirclePaint);
-  }
+    canvas.drawCircle(center, diskRadius * 0.12, hubPaint);
 
-  Color _getSegmentColor(int index) {
-    final colors = [
-      Colors.red,
-      Colors.blue,
-      Colors.green,
-      Colors.yellow,
-      Colors.orange,
-      Colors.purple,
-      Colors.pink,
-      Colors.teal,
-      Colors.cyan,
-      Colors.amber,
-    ];
-    return colors[index % colors.length];
+    final ballCenter = center + ballPosition;
+    final ballPaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [
+          Color(0xFFFFFFFF),
+          Color(0xFF90CAF9),
+        ],
+      ).createShader(
+        Rect.fromCircle(center: ballCenter, radius: ballRadius),
+      );
+    canvas.drawCircle(ballCenter, ballRadius, ballPaint);
+    canvas.drawCircle(
+      ballCenter,
+      ballRadius,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
   }
 
   @override
-  bool shouldRepaint(_RouletteDiskPainter oldDelegate) =>
-      oldDelegate.teams != teams;
+  bool shouldRepaint(covariant _RoulettePainter oldDelegate) {
+    return oldDelegate.teams != teams ||
+        oldDelegate.ballPosition != ballPosition ||
+        oldDelegate.highlightedIndex != highlightedIndex;
+  }
 }
 
-class _ScenePainter extends CustomPainter {
-  _ScenePainter({
-    required this.scene,
-    required this.camera,
-    required Listenable repaint,
-  }) : super(repaint: repaint);
+class _BallSimulation {
+  static const _drag = 1.6;
 
-  final Scene scene;
-  final Camera camera;
+  Offset position = Offset.zero;
+  Offset velocity = Offset.zero;
+  double boundaryRadius = 0;
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    scene.render(camera, canvas, viewport: Offset.zero & size);
+  FrictionSimulation? _simulationX;
+  FrictionSimulation? _simulationY;
+  double _elapsed = 0;
+  bool isRunning = false;
+
+  void placeBall(Offset newPosition) {
+    position = newPosition;
+    velocity = Offset.zero;
+    _stop();
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  void start(Offset initialVelocity) {
+    if (initialVelocity == Offset.zero) {
+      return;
+    }
+    _simulationX = FrictionSimulation(_drag, position.dx, initialVelocity.dx);
+    _simulationY = FrictionSimulation(_drag, position.dy, initialVelocity.dy);
+    _elapsed = 0;
+    velocity = initialVelocity;
+    isRunning = true;
+  }
+
+  void step(double deltaSeconds) {
+    if (!isRunning || _simulationX == null || _simulationY == null) {
+      return;
+    }
+    _elapsed += deltaSeconds;
+    position = Offset(
+      _simulationX!.x(_elapsed),
+      _simulationY!.x(_elapsed),
+    );
+    velocity = Offset(
+      _simulationX!.dx(_elapsed),
+      _simulationY!.dx(_elapsed),
+    );
+
+    final distance = position.distance;
+    if (boundaryRadius > 0 && distance >= boundaryRadius && distance > 0) {
+      _handleBounce(distance);
+    }
+
+    final isDone =
+        _simulationX!.isDone(_elapsed) && _simulationY!.isDone(_elapsed);
+    if (isDone || velocity.distance < 10) {
+      _stop();
+    }
+  }
+
+  void reset() {
+    position = Offset.zero;
+    velocity = Offset.zero;
+    _stop();
+  }
+
+  void _stop() {
+    _simulationX = null;
+    _simulationY = null;
+    _elapsed = 0;
+    isRunning = false;
+  }
+
+  void _handleBounce(double distance) {
+    final normal = position / distance;
+    final reflectedVelocity = _reflect(velocity, normal);
+    position = normal * boundaryRadius * 0.98;
+    _simulationX = FrictionSimulation(_drag, position.dx, reflectedVelocity.dx);
+    _simulationY = FrictionSimulation(_drag, position.dy, reflectedVelocity.dy);
+    _elapsed = 0;
+    velocity = reflectedVelocity;
+  }
+
+  Offset _reflect(Offset velocity, Offset normal) {
+    final dot = velocity.dx * normal.dx + velocity.dy * normal.dy;
+    return velocity - normal * (2 * dot);
+  }
+}
+
+class _RouletteMath {
+  static int segmentIndexFor(Offset position, int segmentCount) {
+    if (segmentCount == 0) {
+      return 0;
+    }
+    final angle = (atan2(position.dy, position.dx) + 2 * pi) % (2 * pi);
+    final segmentAngle = (2 * pi) / segmentCount;
+    final index = angle ~/ segmentAngle;
+    return index.clamp(0, segmentCount - 1);
+  }
 }

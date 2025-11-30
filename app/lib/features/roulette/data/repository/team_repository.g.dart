@@ -22,7 +22,7 @@ final class TeamRepositoryProvider
         argument: null,
         retry: null,
         name: r'teamRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );

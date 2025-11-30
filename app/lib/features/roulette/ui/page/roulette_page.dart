@@ -10,6 +10,7 @@ class RoulettePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final teams = ref.watch(teamRepositoryProvider);
+    final teamRepository = ref.read(teamRepositoryProvider.notifier);
     final unselectedTeams = teams
         .where((t) => t.selectedOrder == null)
         .toList();
@@ -26,12 +27,19 @@ class RoulettePage extends ConsumerWidget {
     final currentRound = teams.length - unselectedTeams.length + 1;
     final totalRounds = teams.length;
 
+    final selectedCount = teams.length - unselectedTeams.length;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('ルーレット ($currentRound/$totalRounds)'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: RouletteScene(teams: unselectedTeams),
+      body: RouletteScene(
+        teams: unselectedTeams,
+        onTeamDecided: (winner) {
+          teamRepository.updateTeamOrder(winner.id, selectedCount);
+        },
+      ),
     );
   }
 }
